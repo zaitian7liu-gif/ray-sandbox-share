@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ray 原生沙箱 — 技术分享</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" id="theme">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<style>
+  :root {
+    --accent: #00d4ff;
+    --accent2: #ff6b9d;
+    --dim: #8892a6;
+  }
+  .reveal { font-family: -apple-system, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .reveal h1, .reveal h2, .reveal h3, .reveal h4 { font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif; text-transform: none; letter-spacing: -0.01em; }
+  .reveal h1 { font-size: 2.2em; }
+  .reveal h2 { font-size: 1.6em; color: var(--accent); }
+  .reveal h3 { font-size: 1.2em; color: var(--accent2); }
+  .reveal section { text-align: left; }
+  .reveal .center { text-align: center; }
+  .reveal pre { box-shadow: none; width: 100%; font-size: 0.5em; }
+  .reveal pre code { max-height: 500px; padding: 18px; border-radius: 6px; }
+  .reveal table { font-size: 0.65em; margin: 0.4em 0; }
+  .reveal table th { background: rgba(0,212,255,0.1); color: var(--accent); border-bottom: 2px solid var(--accent); padding: 8px 12px; }
+  .reveal table td { padding: 6px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .reveal ul li, .reveal ol li { margin: 0.3em 0; line-height: 1.5; }
+  .reveal code { color: var(--accent); background: rgba(0,212,255,0.08); padding: 2px 6px; border-radius: 3px; font-size: 0.85em; }
+  .reveal pre code { color: inherit; background: transparent; padding: 18px; }
+  .tag { display: inline-block; padding: 2px 10px; background: rgba(255,107,157,0.15); color: var(--accent2); border-radius: 12px; font-size: 0.5em; margin-left: 8px; vertical-align: middle; }
+  .meta { color: var(--dim); font-size: 0.6em; }
+  .columns { display: flex; gap: 30px; }
+  .columns > div { flex: 1; }
+  .highlight { color: var(--accent); font-weight: 600; }
+  .danger { color: #ff6b6b; font-weight: 600; }
+  .quote { border-left: 4px solid var(--accent); padding: 8px 20px; margin: 12px 0; color: #ddd; font-style: italic; background: rgba(0,212,255,0.05); }
+  .footer { position: fixed; bottom: 10px; right: 20px; font-size: 14px; color: var(--dim); z-index: 10; }
+  .ascii { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.5em; line-height: 1.3; color: var(--dim); white-space: pre; }
+  .big-num { font-size: 3em; color: var(--accent); font-weight: 700; display: block; text-align: center; line-height: 1.1; }
+  .big-num + .label { text-align: center; display: block; color: var(--dim); font-size: 0.7em; }
+  section.cover { text-align: center; }
+  section.cover h1 { font-size: 2.8em; margin-bottom: 0.3em; background: linear-gradient(135deg, #00d4ff, #ff6b9d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  section.cover .subtitle { font-size: 1.1em; color: var(--dim); margin-bottom: 2em; }
+  section.cover .info { color: var(--dim); font-size: 0.7em; }
+</style>
+</head>
+<body>
+<div class="footer">Ray 2.58 Native Sandboxing · 2026</div>
+<div class="reveal">
+<div class="slides">
+
+<section class="cover">
+  <h1>Ray 原生沙箱</h1>
+  <div class="subtitle">Native Sandboxing in Ray 2.58</div>
+  <p class="info">
+    Anyscale × Google · 2026-08-25<br>
+    Philipp Moritz · Andrew Sy Kim · Xinyu Zhang
+  </p>
+  <p class="meta" style="margin-top: 3em;">← → 或空格翻页 · ESC 看总览</p>
+</section>
+
+<section>
+  <h2>目录</h2>
+  <ol>
+    <li>背景与动机 — 为什么要原生沙箱</li>
+    <li>gVisor 快速扫盲</li>
+    <li>架构设计 — Ray Actor = Sandbox</li>
+    <li>API 两层设计</li>
+    <li>规模: 20 秒 10 万沙箱</li>
+    <li>网络 4 模式 + 文件传输</li>
+    <li>MCP 集成 + 安全加固</li>
+    <li>Harbor 实测</li>
+    <li>路线图</li>
+    <li>对比 / 讨论 / 对我们的启发</li>
+  </ol>
+</section>
+
+<section>
+  <section>
+    <h2>1 · 背景</h2>
+    <h3>要解决什么</h3>
+    <p>Agentic RL / Coding Agent 后训练, 需并发跑<span class="highlight">模型生成的代码</span>.</p>
+    <p>三个硬约束:</p>
+    <ul>
+      <li><strong>不可信</strong> — LLM 产出可能恶意/误操作, 要强隔离</li>
+      <li><strong>规模大</strong> — 一次 RL rollout 几千~几万并发环境</li>
+      <li><strong>动态</strong> — 启动快, 用完销毁, 不是长生命周期服务</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>现有方案痛点</h2>
+    <table>
+      <tr><th>方案</th><th>问题</th></tr>
+      <tr><td>独立沙箱服务 (E2B / Modal)</td><td>自带调度+控制面, 和训练集群两套系统</td></tr>
+      <tr><td>裸 Docker</td><td>共享 kernel, 隔离不足以挡恶意代码</td></tr>
+      <tr><td>Firecracker</td><td>启动 100ms+, 大规模短生命周期代价高</td></tr>
+    </table>
+    <div class="quote">
+      Ray handles orchestration and scaling.<br>
+      gVisor handles isolation.
+    </div>
+  </section>
+</section>
+
+<section>
+  <section>
+    <h2>2 · gVisor 扫盲</h2>
+    <ul>
+      <li>Google 开源, 2018 年起</li>
+      <li><span class="highlight">用户态 Linux kernel</span>, Go 写的</li>
+      <li>应用 syscall → Sentry 进程拦截 → 用户态模拟或转发</li>
+      <li>攻击面: 几百 syscall → 几十</li>
+      <li>OCI 兼容, runtime 名 <code>runsc</code>, 替换 <code>runc</code></li>
+      <li>代价: syscall 密集场景性能损失 10~30%</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>隔离方案对比</h2>
+    <table>
+      <tr><th>方案</th><th>隔离</th><th>启动</th><th>syscall 开销</th></tr>
+      <tr><td>Docker (runc)</td><td>低 (共享 kernel)</td><td>~100ms</td><td>0</td></tr>
+      <tr><td class="highlight">gVisor (runsc)</td><td>中 (用户态 kernel)</td><td>&lt;1s</td><td>中</td></tr>
+      <tr><td>Firecracker</td><td>高 (微 VM)</td><td>125ms+</td><td>低</td></tr>
+      <tr><td>Kata</td><td>高 (VM)</td><td>500ms+</td><td>低</td></tr>
+    </table>
+    <p style="margin-top: 1em;">gVisor 甜点: <span class="highlight">隔离够强 + 启动够快 + OCI 生态</span></p>
+  </section>
+</section>
+
+<section>
+  <section>
+    <h2>3 · 架构</h2>
+    <div class="ascii">
+┌──────────────────────────────────────────┐
+│            Ray Cluster                   │
+│  ┌──────────┐    ┌──────────┐            │
+│  │  Node A  │    │  Node B  │  ...       │
+│  │ ┌──────┐ │    │ ┌──────┐ │            │
+│  │ │Actor │ │    │ │Actor │ │ ← Sandbox  │
+│  │ │ ──── │ │    │ │ ──── │ │   Actor    │
+│  │ │gVisor│ │    │ │gVisor│ │            │
+│  │ └──────┘ │    │ └──────┘ │            │
+│  └──────────┘    └──────────┘            │
+│       ↑                                  │
+│  Ray Scheduler: 选节点, 预留 CPU/mem     │
+└──────────────────────────────────────────┘
+    </div>
+  </section>
+
+  <section>
+    <h2>核心映射</h2>
+    <table>
+      <tr><th>Ray 概念</th><th>Sandbox 概念</th></tr>
+      <tr><td>一个 Actor</td><td>一个沙箱</td></tr>
+      <tr><td>Actor 调度</td><td>沙箱放置 (复用 placement group)</td></tr>
+      <tr><td>Actor 生命周期</td><td>沙箱生命周期</td></tr>
+      <tr><td>Actor 故障恢复 (max_restarts)</td><td>沙箱重建</td></tr>
+      <tr><td>Ray autoscaler</td><td>沙箱横向扩展</td></tr>
+    </table>
+    <p style="margin-top: 1em;">好处: 不用自己写调度器 / 资源管理 / 控制面. <span class="highlight">Ray 当分布式 OS, 沙箱当"进程"</span>.</p>
+  </section>
+</section>
+
+<section>
+  <section>
+    <h2>4 · API 两层设计</h2>
+    <h3>高层: 全自动</h3>
+<pre><code class="language-python" data-trim>
+import ray
+from ray.experimental import sandbox
+
+ray.init()
+
+sb = sandbox.create(
+    cpu=1.0,
+    memory="512Mi",
+    image="python:3.12-slim",
+    network="none",
+)
+
+result = ray.get(sb.exec.remote(
+    "python -c 'import sys; print(sys.version)'"
+))
+print(result.stdout)
+
+sb.delete.remote()
+</code></pre>
+  </section>
+
+  <section>
+    <h2>生命周期操作</h2>
+    <ul>
+      <li><code>create(image, cpu, memory, network, env, workdir, capabilities, ...)</code></li>
+      <li><code>exec(cmd)</code> — 返回 stdout / stderr / exit_code</li>
+      <li><code>read_file / write_file</code></li>
+      <li><code>upload_file / download_file</code></li>
+      <li><code>status()</code></li>
+      <li><code>delete() / kill()</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>低层: SandboxRuntime</h2>
+<pre><code class="language-python" data-trim>
+from ray.experimental.sandbox import SandboxRuntime
+
+@ray.remote
+class SandboxPool:
+    def __init__(self):
+        self.rt = SandboxRuntime()
+        self.pool = {}
+
+    def create(self, sid, image):
+        self.pool[sid] = self.rt.create(image=image)
+
+    def exec(self, sid, cmd):
+        return self.pool[sid].exec(cmd)
+</code></pre>
+    <p>单 Actor 内自建沙箱池 → batch 场景省调度开销.</p>
+  </section>
+
+  <section>
+    <h2>关键: OCI spec 回调</h2>
+<pre><code class="language-python" data-trim>
+def harden(spec):
+    # 防 fork bomb
+    spec["process"]["rlimits"].append({
+        "type": "RLIMIT_NPROC",
+        "hard": 100, "soft": 100
+    })
+    # 清所有 Linux capability
+    spec["process"]["capabilities"] = {
+        k: [] for k in (
+            "bounding", "effective", "permitted",
+            "inheritable", "ambient"
+        )
+    }
+    return spec
+
+sb = sandbox.create(
+    image="...",
+    _oci_spec_transform_fn=harden,
+)
+</code></pre>
+  </section>
+</section>
+
+<section>
+  <section>
+    <h2>5 · 规模</h2>
+    <div style="margin: 1em 0;">
+      <span class="big-num">100,000</span>
+      <span class="label">gVisor 沙箱</span>
+    </div>
+    <div style="margin: 1em 0;">
+      <span class="big-num">20s</span>
+      <span class="label">全部启动完成</span>
+    </div>
+    <p class="center meta">GKE 实测, 分布在数千节点</p>
+  </section>
+
+  <section>
+    <h2>为啥能这么快</h2>
+    <ol>
+      <li>gVisor 本身亚秒启动</li>
+      <li>Ray scheduler 把放置决策<span class="highlight">并行化</span></li>
+      <li>Actor 创建不走 kube-scheduler, 直接在 Ray worker 上拉起</li>
+    </ol>
+    <p style="margin-top: 1.5em;"><strong>对比</strong>: 独立沙箱服务通常要过 K8s API server + kube-scheduler, 这规模下 API server 直接压崩.</p>
+    <p>拆算: 5000 沙箱/秒 总吞吐, 单节点 ~2.5 沙箱/秒 冷启.</p>
+  </section>
+</section>
+
+<section>
+  <section>
+    <h2>6 · 四种网络模式</h2>
+    <table>
+      <tr><th>模式</th><th>行为</th><th>典型用途</th></tr>
+      <tr><td><code>none</code> (默认)</td><td>仅 loopback</td><td>不可信代码执行</td></tr>
+      <tr><td><code>public</code></td><td>允许出公网</td><td>装 pip, 调外部 API</td></tr>
+      <tr><td><code>host</code></td><td>共享节点 netns</td><td>访问节点本地服务</td></tr>
+      <tr><td><code>sandbox</code></td><td>独立网络栈</td><td>沙箱间互通</td></tr>
+    </table>
+    <p style="margin-top: 1em;">默认 <code>none</code> = <span class="highlight">安全默认</span>. 对 agent 场景, 默认不给网比默认给网安全得多.</p>
+  </section>
+
+  <section>
+    <h2>文件传输两条路</h2>
+    <div class="columns">
+      <div>
+        <h3>小文件</h3>
+        <ul>
+          <li>配置 / 脚本</li>
+          <li><code>write_file(path, bytes)</code></li>
+          <li><code>read_file(path)</code></li>
+          <li>走 Ray object store</li>
+        </ul>
+      </div>
+      <div>
+        <h3>大目录</h3>
+        <ul>
+          <li>代码仓库 / 数据集</li>
+          <li>tar 打包传输</li>
+          <li>保留权限 / 符号链接 / 空目录</li>
+          <li>跨节点自动走 object store</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</section>
+
+<section>
+  <section>
+    <h2>7 · MCP 后端</h2>
+    <p>Ray Sandbox 可作 MCP tool backend. FastMCP 示例:</p>
+<pre><code class="language-python" data-trim>
+from fastmcp import FastMCP
+from ray.experimental import sandbox
+
+mcp = FastMCP("ray-sandbox")
+
+@mcp.tool
+def run_python(code: str) -> str:
+    sb = sandbox.create(
+        image="python:3.12-slim",
+        network="none",
+        timeout=30,
+    )
+    try:
+        return ray.get(sb.exec.remote(
+            f"python -c {code!r}"
+        )).stdout
+    finally:
+        sb.delete.remote()
+</code></pre>
+  </section>
+
+  <section>
+    <h2>安全加固 checklist</h2>
+    <ul>
+      <li><code>network="none"</code> 默认</li>
+      <li><code>capabilities=[]</code> 清所有 cap</li>
+      <li><code>RLIMIT_NPROC</code> 限制 fork</li>
+      <li><code>RLIMIT_FSIZE</code> 限制写盘</li>
+      <li><code>timeout</code> 硬超时</li>
+      <li>CPU / memory 硬限</li>
+      <li>只读 rootfs (OCI spec 改)</li>
+      <li>用后即焚 — 不复用沙箱实例</li>
+    </ul>
+  </section>
+</section>
+
+<section>
+  <section>
+    <h2>8 · Harbor 集成</h2>
+    <p>Harbor = coding agent 评测框架. 跑 Claude Code / OpenHands / Codex CLI. 支持 SWE-Bench / Terminal-Bench.</p>
+<pre><code class="language-bash" data-trim>
+pip install 'harbor[ray]'
+
+harbor run --dataset terminal-bench@2.0 \
+  --agent claude-code \
+  --model anthropic/claude-opus-4-1 \
+  -e ray \
+  --n-concurrent 32
+</code></pre>
+  </section>
+
+  <section>
+    <h2>14 核机实测</h2>
+    <div class="columns">
+      <div>
+        <span class="big-num">29s</span>
+        <span class="label">单 trial</span>
+      </div>
+      <div>
+        <span class="big-num">45s</span>
+        <span class="label">p50 (4 并发)</span>
+      </div>
+      <div>
+        <span class="big-num">1.0</span>
+        <span class="label">全部 reward</span>
+      </div>
+    </div>
+    <p class="center" style="margin-top: 1em;">4 并发 × 8 trial, 总耗时 3m02s, 0 异常</p>
+    <p class="meta">瓶颈: 节点内存. 可用 Ray autoscaler 横向扩.</p>
+  </section>
+
+  <section>
+    <h2>Harbor → Ray Sandbox 映射</h2>
+    <table>
+      <tr><th>Harbor 概念</th><th>Ray Sandbox 映射</th></tr>
+      <tr><td>任务镜像 capabilities</td><td>Docker 兼容 cap 集</td></tr>
+      <tr><td><code>bash -c</code> 命令</td><td>sandbox.exec 字符串</td></tr>
+      <tr><td>文件目录</td><td>tar 归档传输</td></tr>
+      <tr><td>资源请求</td><td>Ray 调度预留 + 沙箱内 rlimit</td></tr>
+      <tr><td>no-network</td><td><code>network="none"</code>, 违反前拒绝</td></tr>
+    </table>
+    <p style="margin-top: 1em;" class="meta">不支持: Compose / GPU / allowlist 任务</p>
+  </section>
+</section>
+
+<section>
+  <section>
+    <h2>9 · 路线图</h2>
+    <ol>
+      <li><strong>REST API 服务</strong> — 训练集群与沙箱集群物理隔离 (PR #65633)</li>
+      <li><strong>GPU 支持</strong> — kernel generation / RSI 场景</li>
+      <li><strong>沙箱内 Docker</strong> — gVisor 内跑 docker daemon</li>
+      <li><strong>文件系统快照</strong> — 批量 fork 共享 base layer</li>
+      <li><strong>跨沙箱端口暴露</strong> — 多 agent 协作</li>
+      <li><strong>安全加固指南</strong> — 针对主动尝试逃逸的模型</li>
+    </ol>
+    <div class="quote" style="margin-top: 1em;">
+      REST API 这条最关键 — 训练集群通常内网, 跑不可信代码必须隔离域.
+    </div>
+  </section>
+</section>
+
+<section>
+  <section>
+    <h2>10 · 讨论</h2>
+    <h3>vs E2B / Modal / Daytona</h3>
+    <ul>
+      <li><strong>E2B / Modal</strong>: SaaS, 独立控制面, 国内不可用</li>
+      <li><strong>Daytona</strong>: 开源, Firecracker, 隔离更强但启动慢</li>
+      <li><strong>Ray Sandbox</strong>: 跟训练 workload <span class="highlight">同控制面</span>, 适合自建 RL 基础设施的团队</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>为啥不是 Firecracker</h2>
+    <p>Firecracker 隔离更强 (完整 VM), 但:</p>
+    <ul>
+      <li>启动 ~125ms vs gVisor &lt;50ms, 冷启差 2-3 倍</li>
+      <li>内存开销大 — 每 VM 一份 kernel</li>
+      <li>10 万并发规模下资源成本不划算</li>
+      <li>短生命周期 + 高吞吐场景 → gVisor 甜点</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>攻击面要注意</h2>
+    <p class="danger">gVisor 不是银弹.</p>
+    <ul>
+      <li>CVE-2023-3978 (DNS 解析) 等历史漏洞存在</li>
+      <li>共享 host, 侧信道 (Spectre 等) 仍适用</li>
+      <li>原文明说 "future: guidance for models actively trying to escape"</li>
+      <li>→ 官方承认<span class="danger">当前防御未针对主动攻击者优化</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>对 ray-agent 的启发</h2>
+    <p>当前只读诊断, 不涉及. 但若走向:</p>
+    <ul>
+      <li>Agent 自动跑诊断脚本 (替代 <code>kubectl exec</code>)</li>
+      <li>自愈动作执行 (重启 pod 前 dry-run)</li>
+      <li>用户自带脚本在集群侧跑</li>
+    </ul>
+    <p style="margin-top: 1em;">Ray Sandbox 是比 <code>kubectl exec</code> <span class="highlight">更安全的落点</span>.</p>
+    <p class="meta">短期不动, 长期纳入架构考量.</p>
+  </section>
+
+  <section>
+    <h2>国内落地建议</h2>
+    <ul>
+      <li>Ray 2.58 实验性, 生产用观察几个版本</li>
+      <li>节点需预装 <code>runsc</code> (基础镜像自己打)</li>
+      <li>国内 GKE 不可用, 自建 K8s + Ray Autoscaler 也能跑</li>
+      <li>关键看沙箱放置能否复用现有调度策略</li>
+    </ul>
+  </section>
+</section>
+
+<section class="cover">
+  <h1>Q &amp; A</h1>
+  <p class="subtitle">Ray 原生沙箱</p>
+  <p class="info" style="margin-top: 2em;">
+    原文: <code>anyscale.com/blog/announcing-native-sandboxing-in-ray</code><br>
+    Ray 2.58 · Issue #65352
+  </p>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'slide',
+  controls: true,
+  progress: true,
+  center: false,
+  width: 1280,
+  height: 800,
+  margin: 0.06,
+  plugins: [ RevealHighlight, RevealNotes ]
+});
+</script>
+</body>
+</html>
