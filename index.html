@@ -4,202 +4,433 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ray 原生沙箱 — 技术分享</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/atom-one-light.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
 <style>
   :root {
-    --bg: #fdfdfc;
-    --fg: #24292f;
-    --dim: #656d76;
-    --faint: #eaecef;
-    --accent: #0969da;
-    --code-bg: #f6f8fa;
+    --bg: #faf7f2;
+    --bg-card: #ffffff;
+    --fg: #1a1a1a;
+    --fg-soft: #2d2d2d;
+    --dim: #6b6b6b;
+    --faint: #e8e2d6;
+    --accent: #d94f3a;
+    --accent2: #0d47a1;
+    --accent3: #f4a261;
+    --code-bg: #1e1e24;
+    --code-fg: #e8e3d8;
+    --quote-bg: #fff8e8;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 10px 30px rgba(0,0,0,0.04);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0d1117;
-      --fg: #c9d1d9;
-      --dim: #8b949e;
-      --faint: #21262d;
-      --accent: #58a6ff;
-      --code-bg: #161b22;
+      --bg: #16161a;
+      --bg-card: #1f1f24;
+      --fg: #ebe9e3;
+      --fg-soft: #d4d2cc;
+      --dim: #9a978f;
+      --faint: #2d2d33;
+      --accent: #ff6b57;
+      --accent2: #7cb6ff;
+      --accent3: #ffb476;
+      --code-bg: #0d0d12;
+      --code-fg: #e8e3d8;
+      --quote-bg: #2a241a;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.2);
     }
   }
 
   * { box-sizing: border-box; }
-  html { -webkit-font-smoothing: antialiased; }
+  html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--fg);
-    font-family: -apple-system, "SF Pro Text", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    font-family: "Inter", -apple-system, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
     font-size: 17px;
-    line-height: 1.75;
+    line-height: 1.78;
+    background-image:
+      radial-gradient(circle at 10% 0%, rgba(217,79,58,0.04) 0%, transparent 50%),
+      radial-gradient(circle at 90% 100%, rgba(13,71,161,0.04) 0%, transparent 50%);
+  }
+
+  /* Reading progress */
+  #progress {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    width: 0%; z-index: 100; transition: width 0.1s;
   }
 
   article {
-    max-width: 720px;
+    max-width: 760px;
     margin: 0 auto;
-    padding: 80px 24px 120px;
+    padding: 60px 28px 120px;
   }
 
+  /* Hero */
   header.post {
-    margin-bottom: 48px;
-    padding-bottom: 32px;
-    border-bottom: 1px solid var(--faint);
+    text-align: center;
+    margin-bottom: 56px;
+    padding-bottom: 48px;
+    position: relative;
+  }
+  header.post::after {
+    content: "✦ ✦ ✦";
+    position: absolute; bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    color: var(--accent3);
+    letter-spacing: 8px;
+    font-size: 12px;
+  }
+  header.post .eyebrow {
+    display: inline-block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 6px 14px;
+    border: 1px solid var(--accent);
+    border-radius: 100px;
+    margin-bottom: 24px;
   }
   header.post h1 {
-    font-size: 36px;
-    line-height: 1.3;
-    margin: 0 0 12px;
-    letter-spacing: -0.01em;
+    font-family: "Noto Serif SC", "Playfair Display", Georgia, serif;
+    font-size: 52px;
+    line-height: 1.2;
+    margin: 0 0 20px;
+    letter-spacing: -0.02em;
     font-weight: 700;
+    color: var(--fg);
+  }
+  header.post h1 .accent {
+    color: var(--accent);
+    font-style: italic;
+  }
+  header.post .lede {
+    font-size: 19px;
+    color: var(--dim);
+    max-width: 560px;
+    margin: 0 auto 28px;
+    line-height: 1.6;
+    font-weight: 400;
   }
   header.post .meta {
     color: var(--dim);
-    font-size: 14px;
+    font-size: 13px;
+    font-family: "JetBrains Mono", monospace;
+    letter-spacing: 0.02em;
   }
-  header.post .meta a { color: var(--accent); text-decoration: none; }
-  header.post .meta a:hover { text-decoration: underline; }
-  header.post .meta .sep { margin: 0 8px; opacity: 0.5; }
+  header.post .meta a { color: var(--accent2); text-decoration: none; border-bottom: 1px solid currentColor; }
+  header.post .meta .sep { margin: 0 10px; opacity: 0.4; }
 
+  /* Headings */
   h2 {
-    font-size: 26px;
-    margin: 56px 0 16px;
-    padding-top: 8px;
-    letter-spacing: -0.01em;
+    font-family: "Noto Serif SC", Georgia, serif;
+    font-size: 32px;
+    line-height: 1.3;
+    margin: 72px 0 20px;
+    letter-spacing: -0.015em;
     font-weight: 700;
+    color: var(--fg);
+    position: relative;
+    padding-left: 20px;
     scroll-margin-top: 20px;
   }
+  h2::before {
+    content: "";
+    position: absolute; left: 0; top: 14px; bottom: 14px;
+    width: 4px;
+    background: linear-gradient(180deg, var(--accent), var(--accent3));
+    border-radius: 2px;
+  }
+  h2 .num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+  }
+
   h3 {
-    font-size: 19px;
-    margin: 32px 0 12px;
-    font-weight: 600;
+    font-size: 22px;
+    margin: 40px 0 14px;
+    font-weight: 700;
+    color: var(--fg-soft);
+    letter-spacing: -0.01em;
+  }
+  h3::before {
+    content: "▸";
+    color: var(--accent3);
+    margin-right: 10px;
+    font-size: 0.8em;
   }
   h4 {
-    font-size: 16px;
-    margin: 24px 0 8px;
+    font-size: 15px;
+    margin: 24px 0 10px;
     font-weight: 600;
-    color: var(--dim);
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 
-  p { margin: 16px 0; }
-  ul, ol { padding-left: 28px; margin: 16px 0; }
-  li { margin: 6px 0; }
+  p { margin: 18px 0; color: var(--fg-soft); }
+  p .highlight { background: linear-gradient(180deg, transparent 60%, rgba(244,162,97,0.4) 60%); padding: 0 2px; }
 
-  strong { font-weight: 600; }
+  ul, ol { padding-left: 28px; margin: 18px 0; }
+  li { margin: 8px 0; color: var(--fg-soft); }
+  ul li::marker { color: var(--accent); }
+  ol li::marker { color: var(--accent2); font-weight: 700; }
+
+  strong { font-weight: 700; color: var(--fg); }
   em { color: var(--dim); font-style: italic; }
 
-  a { color: var(--accent); }
+  a { color: var(--accent2); text-decoration: none; border-bottom: 1px solid rgba(13,71,161,0.3); transition: border-color 0.2s; }
+  a:hover { border-bottom-color: var(--accent2); }
 
   code {
-    font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
-    font-size: 0.88em;
-    background: var(--code-bg);
-    padding: 2px 6px;
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 0.85em;
+    background: var(--faint);
+    color: var(--accent);
+    padding: 2px 8px;
     border-radius: 4px;
+    font-weight: 500;
   }
   pre {
     background: var(--code-bg);
-    border-radius: 6px;
-    padding: 16px 20px;
+    color: var(--code-fg);
+    border-radius: 10px;
+    padding: 22px 26px;
     overflow-x: auto;
-    margin: 20px 0;
-    line-height: 1.5;
+    margin: 24px 0;
+    line-height: 1.6;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+  pre::before {
+    content: "";
+    position: absolute; top: 12px; left: 14px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #ff5f56;
+    box-shadow: 16px 0 0 #ffbd2e, 32px 0 0 #27c93f;
   }
   pre code {
     background: transparent;
+    color: inherit;
     padding: 0;
+    padding-top: 18px;
+    display: block;
     font-size: 14px;
+    font-weight: 400;
   }
 
+  /* Tables */
   table {
     width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 24px 0;
     font-size: 15px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
   }
   th, td {
     text-align: left;
-    padding: 10px 14px;
+    padding: 12px 18px;
     border-bottom: 1px solid var(--faint);
   }
   th {
-    font-weight: 600;
-    border-bottom: 2px solid var(--faint);
+    font-weight: 700;
+    background: linear-gradient(180deg, rgba(217,79,58,0.08), rgba(217,79,58,0.03));
+    color: var(--accent);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
+  td { color: var(--fg-soft); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(244,162,97,0.05); }
 
+  /* Blockquote */
   blockquote {
-    border-left: 3px solid var(--accent);
-    margin: 20px 0;
-    padding: 4px 20px;
-    color: var(--dim);
+    border: none;
+    margin: 28px 0;
+    padding: 20px 28px;
+    background: var(--quote-bg);
+    border-left: 4px solid var(--accent3);
+    border-radius: 0 10px 10px 0;
+    color: var(--fg-soft);
+    font-family: "Noto Serif SC", Georgia, serif;
+    font-size: 18px;
+    line-height: 1.7;
     font-style: italic;
+    position: relative;
+  }
+  blockquote::before {
+    content: """;
+    position: absolute;
+    top: -8px; left: 16px;
+    font-size: 56px;
+    color: var(--accent3);
+    opacity: 0.3;
+    font-family: Georgia, serif;
+    line-height: 1;
   }
 
   hr {
     border: 0;
-    border-top: 1px solid var(--faint);
-    margin: 48px 0;
+    text-align: center;
+    margin: 56px 0;
+  }
+  hr::after {
+    content: "✦ ✦ ✦";
+    color: var(--accent3);
+    letter-spacing: 10px;
+    font-size: 12px;
   }
 
+  /* ASCII art */
   .ascii {
-    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-family: "JetBrains Mono", Menlo, monospace;
     font-size: 13px;
-    line-height: 1.4;
-    color: var(--dim);
+    line-height: 1.5;
+    color: var(--code-fg);
     white-space: pre;
     background: var(--code-bg);
-    padding: 16px;
-    border-radius: 6px;
+    padding: 24px;
+    border-radius: 10px;
     overflow-x: auto;
-    margin: 20px 0;
+    margin: 24px 0;
+    box-shadow: var(--shadow);
+  }
+
+  /* Stat cards */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 28px 0;
+  }
+  .stat {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 24px 20px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border-top: 3px solid var(--accent);
+  }
+  .stat:nth-child(2) { border-top-color: var(--accent2); }
+  .stat:nth-child(3) { border-top-color: var(--accent3); }
+  .stat .num {
+    display: block;
+    font-family: "Noto Serif SC", Georgia, serif;
+    font-size: 40px;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--fg);
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .stat .label {
+    color: var(--dim);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  /* Pull quote (big callout) */
+  .pull-quote {
+    text-align: center;
+    margin: 48px -20px;
+    padding: 40px 32px;
+    font-family: "Noto Serif SC", Georgia, serif;
+    font-size: 26px;
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--fg);
+    border-top: 1px solid var(--accent);
+    border-bottom: 1px solid var(--accent);
+    position: relative;
+  }
+  .pull-quote strong { color: var(--accent); font-style: normal; }
+  .pull-quote::before, .pull-quote::after {
+    content: "✦";
+    display: block;
+    color: var(--accent3);
+    font-size: 14px;
+    margin: 10px 0;
   }
 
   footer {
     margin-top: 80px;
-    padding-top: 32px;
+    padding: 32px 0;
+    text-align: center;
     border-top: 1px solid var(--faint);
     color: var(--dim);
-    font-size: 14px;
+    font-size: 13px;
+    font-family: "JetBrains Mono", monospace;
+    line-height: 2;
   }
-  footer a { color: var(--accent); text-decoration: none; }
+  footer a { color: var(--accent2); }
 
-  @media (max-width: 600px) {
+  @media (max-width: 640px) {
     body { font-size: 16px; }
-    article { padding: 48px 20px 80px; }
-    header.post h1 { font-size: 28px; }
-    h2 { font-size: 22px; }
-    pre { font-size: 13px; }
+    article { padding: 40px 20px 80px; }
+    header.post h1 { font-size: 36px; }
+    header.post .lede { font-size: 16px; }
+    h2 { font-size: 26px; margin-top: 56px; }
+    h3 { font-size: 19px; }
+    pre { padding: 18px 20px; font-size: 13px; }
+    .stats { grid-template-columns: 1fr; }
+    .pull-quote { font-size: 20px; margin: 32px 0; padding: 28px 20px; }
   }
 </style>
 </head>
 <body>
 
+<div id="progress"></div>
+
 <article>
 
 <header class="post">
-  <h1>Ray 原生沙箱 — 技术分享</h1>
+  <div class="eyebrow">Tech Share · Ray 2.58</div>
+  <h1>Ray 原生<span class="accent">沙箱</span></h1>
+  <p class="lede">
+    Anyscale 把 gVisor 塞进了 Ray. 为 Agentic RL 和 Coding Agent 后训练, 做大规模可信代码执行.
+  </p>
   <div class="meta">
-    2026-10-21
+    2026·10·21
     <span class="sep">·</span>
-    基于 <a href="https://www.anyscale.com/blog/announcing-native-sandboxing-in-ray" target="_blank">Anyscale 博客 (2026-08-25)</a>
+    <a href="https://www.anyscale.com/blog/announcing-native-sandboxing-in-ray" target="_blank">原文 ↗</a>
     <span class="sep">·</span>
-    Ray 2.58
+    Philipp Moritz · Andrew Sy Kim · Xinyu Zhang
   </div>
 </header>
 
 <p>
-Ray 2.58 把沙箱做成了原生能力, 2026 年 8 月 25 日由 Anyscale 和 Google (gVisor 团队) 联合发布, 作者 Philipp Moritz、Andrew Sy Kim、Xinyu Zhang. 这篇把文章拆开讲, 顺带补一些对标和落地想法.
+Ray 2.58 把沙箱做成了原生能力, 2026 年 8 月 25 日由 Anyscale 和 Google 的 gVisor 团队联合发布. 这是一次把"分布式编排"和"安全隔离"做乘法的尝试 —— Ray 管调度扩缩, gVisor 管隔离, 中间不再需要独立的沙箱控制面.
 </p>
 
-<h2>一、背景与动机</h2>
+<p>
+这篇把文章拆开讲, 顺带补一些对标和落地想法.
+</p>
+
+<h2><span class="num">PART 01</span>背景与动机</h2>
 
 <p>这套东西主要给 <strong>Agentic RL</strong> 和 <strong>Coding Agent</strong> 后训练用. 场景的共同点是: 需要大规模并发跑 <em>模型生成的代码</em>. 三个硬约束:</p>
 
 <ul>
-  <li><strong>不可信</strong>: LLM 产出可能恶意或误操作, 必须强隔离</li>
-  <li><strong>规模大</strong>: 一次 RL rollout 几千到几万并发环境</li>
-  <li><strong>动态</strong>: 启动快, 用完销毁, 不是长生命周期服务</li>
+  <li><strong>不可信</strong> — LLM 产出可能恶意或误操作, 必须强隔离</li>
+  <li><strong>规模大</strong> — 一次 RL rollout 几千到几万并发环境</li>
+  <li><strong>动态</strong> — 启动快, 用完销毁, 不是长生命周期服务</li>
 </ul>
 
 <p>现有方案都有短板:</p>
@@ -211,36 +442,37 @@ Ray 2.58 把沙箱做成了原生能力, 2026 年 8 月 25 日由 Anyscale 和 G
   <tr><td>Firecracker</td><td>启动 100ms+, 大规模短生命周期代价高</td></tr>
 </table>
 
-<p>Ray Sandbox 的定位原文一句话讲完:</p>
+<div class="pull-quote">
+  <strong>Ray</strong> handles orchestration and scaling.<br>
+  <strong>gVisor</strong> handles isolation.
+</div>
 
-<blockquote>Ray handles orchestration and scaling. gVisor handles isolation.</blockquote>
-
-<h2>二、gVisor 快速扫盲</h2>
+<h2><span class="num">PART 02</span>gVisor 快速扫盲</h2>
 
 <p>团队可能不熟 gVisor, 先铺垫:</p>
 
 <ul>
   <li>Google 开源, 2018 年起</li>
-  <li><strong>用户态 Linux kernel</strong>, Go 写的</li>
+  <li><span class="highlight">用户态 Linux kernel</span>, Go 写的</li>
   <li>应用 syscall → Sentry 进程拦截 → 用户态模拟或转发给宿主 kernel</li>
   <li>攻击面从几百 syscall 收窄到几十</li>
   <li>OCI 兼容, runtime 名 <code>runsc</code>, 替换 <code>runc</code></li>
   <li>代价: syscall 密集场景性能损失 10~30%, Agent 跑脚本可接受</li>
 </ul>
 
-<p>四种隔离方案横向比:</p>
+<h3>四种隔离方案横向比</h3>
 
 <table>
   <tr><th>方案</th><th>隔离</th><th>启动</th><th>syscall 开销</th></tr>
   <tr><td>Docker (runc)</td><td>低, 共享 kernel</td><td>~100ms</td><td>0</td></tr>
-  <tr><td>gVisor (runsc)</td><td>中, 用户态 kernel</td><td>&lt;1s</td><td>中</td></tr>
+  <tr><td><strong>gVisor (runsc)</strong></td><td>中, 用户态 kernel</td><td>&lt;1s</td><td>中</td></tr>
   <tr><td>Firecracker</td><td>高, 微 VM</td><td>125ms+</td><td>低</td></tr>
   <tr><td>Kata</td><td>高, VM</td><td>500ms+</td><td>低</td></tr>
 </table>
 
-<p>gVisor 的甜点: 隔离够强 + 启动够快 + OCI 生态.</p>
+<p>gVisor 的甜点: <strong>隔离够强 + 启动够快 + OCI 生态</strong>.</p>
 
-<h2>三、架构设计</h2>
+<h2><span class="num">PART 03</span>架构设计</h2>
 
 <div class="ascii">┌──────────────────────────────────────────┐
 │            Ray Cluster                   │
@@ -256,7 +488,7 @@ Ray 2.58 把沙箱做成了原生能力, 2026 年 8 月 25 日由 Anyscale 和 G
 │  Ray Scheduler: 选节点, 预留 CPU/mem     │
 └──────────────────────────────────────────┘</div>
 
-<p>核心映射:</p>
+<h3>核心映射</h3>
 
 <table>
   <tr><th>Ray 概念</th><th>Sandbox 概念</th></tr>
@@ -267,9 +499,9 @@ Ray 2.58 把沙箱做成了原生能力, 2026 年 8 月 25 日由 Anyscale 和 G
   <tr><td>Ray autoscaler</td><td>沙箱横向扩展</td></tr>
 </table>
 
-<p>好处明显: 不用自己写调度器 / 资源管理 / 控制面. 把 Ray 当分布式 OS, 沙箱当"进程"就对了.</p>
+<p>好处明显: 不用自己写调度器 / 资源管理 / 控制面. 把 <span class="highlight">Ray 当分布式 OS, 沙箱当"进程"</span>就对了.</p>
 
-<h2>四、API 两层设计</h2>
+<h2><span class="num">PART 04</span>API 两层设计</h2>
 
 <h3>高层 <code>sandbox</code> 模块</h3>
 
@@ -294,7 +526,7 @@ print(result.stdout)
 
 sb.delete.remote()</code></pre>
 
-<p>生命周期操作:</p>
+<h4>生命周期操作</h4>
 
 <ul>
   <li><code>create(image, cpu, memory, network, env, workdir, capabilities, ...)</code></li>
@@ -347,21 +579,36 @@ sb = sandbox.create(
     _oci_spec_transform_fn=harden,
 )</code></pre>
 
-<h2>五、规模数据</h2>
+<h2><span class="num">PART 05</span>规模数据</h2>
 
-<p>官方 benchmark: GKE 上 <strong>20 秒内启动 100,000 个 gVisor 沙箱</strong>, 分布在数千节点. 换算成吞吐大概 5000 沙箱/秒, 单节点 ~2.5 沙箱/秒冷启动.</p>
+<p>官方 benchmark: GKE 上 <span class="highlight">20 秒内启动 100,000 个 gVisor 沙箱</span>, 分布在数千节点.</p>
 
-<p>能达成这速度的三个原因:</p>
+<div class="stats">
+  <div class="stat">
+    <span class="num">100K</span>
+    <div class="label">并发沙箱</div>
+  </div>
+  <div class="stat">
+    <span class="num">20s</span>
+    <div class="label">启动耗时</div>
+  </div>
+  <div class="stat">
+    <span class="num">5K/s</span>
+    <div class="label">启动吞吐</div>
+  </div>
+</div>
+
+<h3>为什么能这么快</h3>
 
 <ol>
   <li>gVisor 本身亚秒启动</li>
-  <li>Ray scheduler 把放置决策并行化</li>
+  <li>Ray scheduler 把放置决策<strong>并行化</strong></li>
   <li>Actor 创建不走 kube-scheduler, 直接在 Ray worker 上拉起</li>
 </ol>
 
 <p>对比独立沙箱服务: 通常要过 K8s API server + kube-scheduler, 这规模下 API server 直接压崩.</p>
 
-<h2>六、网络与文件</h2>
+<h2><span class="num">PART 06</span>网络与文件</h2>
 
 <h3>四种网络模式</h3>
 
@@ -380,11 +627,11 @@ sb = sandbox.create(
 <p>两条路, 按大小走:</p>
 
 <ul>
-  <li><strong>小文件</strong> (配置/脚本): <code>write_file(path, bytes)</code> / <code>read_file(path)</code> 直接走 Ray object store</li>
+  <li><strong>小文件</strong> (配置/脚本): <code>write_file / read_file</code> 直接走 Ray object store</li>
   <li><strong>大目录</strong> (代码仓库/数据集): tar 打包传输, 保留权限、符号链接、空目录; 跨节点自动走 object store</li>
 </ul>
 
-<h2>七、MCP 后端 + 安全加固</h2>
+<h2><span class="num">PART 07</span>MCP 后端 + 安全加固</h2>
 
 <p>Ray Sandbox 可作 MCP tool backend. FastMCP 示例:</p>
 
@@ -407,7 +654,7 @@ def run_python(code: str) -> str:
     finally:
         sb.delete.remote()</code></pre>
 
-<p>完整加固 checklist:</p>
+<h3>加固 checklist</h3>
 
 <ul>
   <li><code>network="none"</code> 默认</li>
@@ -420,9 +667,9 @@ def run_python(code: str) -> str:
   <li>用后即焚, 不复用沙箱实例</li>
 </ul>
 
-<h2>八、Harbor 集成实测</h2>
+<h2><span class="num">PART 08</span>Harbor 集成实测</h2>
 
-<p>Harbor 是 coding agent 评测框架, 跑 Claude Code / OpenHands / Codex CLI, 支持 SWE-Bench / Terminal-Bench 等基准. Ray Sandbox 作为后端跑法:</p>
+<p>Harbor 是 coding agent 评测框架, 跑 Claude Code / OpenHands / Codex CLI, 支持 SWE-Bench / Terminal-Bench 等基准. Ray Sandbox 作为后端:</p>
 
 <pre><code class="language-bash">pip install 'harbor[ray]'
 
@@ -432,9 +679,26 @@ harbor run --dataset terminal-bench@2.0 \
   -e ray \
   --n-concurrent 32</code></pre>
 
-<p>官方 14 核开发机实测: 单 trial 29s, 4 并发跑 8 trial 全部 reward=1.0, 0 异常, 总 3m02s, p50=45s. 瓶颈是节点内存, 可用 Ray autoscaler 横向扩.</p>
+<h3>14 核机实测</h3>
 
-<p>Harbor 到 Ray Sandbox 的映射:</p>
+<div class="stats">
+  <div class="stat">
+    <span class="num">29s</span>
+    <div class="label">单 trial</div>
+  </div>
+  <div class="stat">
+    <span class="num">45s</span>
+    <div class="label">p50 (4 并发)</div>
+  </div>
+  <div class="stat">
+    <span class="num">1.0</span>
+    <div class="label">全部 reward</div>
+  </div>
+</div>
+
+<p>4 并发 × 8 trial, 总 3m02s, 0 异常. 瓶颈是节点内存, 可用 Ray autoscaler 横向扩.</p>
+
+<h3>Harbor → Ray Sandbox 映射</h3>
 
 <table>
   <tr><th>Harbor 概念</th><th>Ray Sandbox 映射</th></tr>
@@ -447,7 +711,7 @@ harbor run --dataset terminal-bench@2.0 \
 
 <p><em>目前不支持 Compose、GPU、allowlist 任务.</em></p>
 
-<h2>九、路线图</h2>
+<h2><span class="num">PART 09</span>路线图</h2>
 
 <ol>
   <li><strong>REST API 服务</strong> — 训练集群与沙箱集群物理隔离 (PR #65633 原型中)</li>
@@ -458,16 +722,16 @@ harbor run --dataset terminal-bench@2.0 \
   <li><strong>安全加固指南</strong> — 针对主动尝试逃逸的模型</li>
 </ol>
 
-<blockquote>REST API 这条最关键. 训练集群通常内网, 跑不可信代码必须隔离域.</blockquote>
+<blockquote>REST API 这条最关键. 训练集群通常在内网, 跑不可信代码必须隔离域.</blockquote>
 
-<h2>十、讨论</h2>
+<h2><span class="num">PART 10</span>讨论</h2>
 
 <h3>vs E2B / Modal / Daytona</h3>
 
 <ul>
   <li><strong>E2B / Modal</strong>: SaaS, 独立控制面, 国内不可用</li>
   <li><strong>Daytona</strong>: 开源, Firecracker, 隔离更强但启动慢</li>
-  <li><strong>Ray Sandbox</strong>: 跟训练 workload 同控制面, 适合自建 RL 基础设施的团队</li>
+  <li><strong>Ray Sandbox</strong>: 跟训练 workload <span class="highlight">同控制面</span>, 适合自建 RL 基础设施的团队</li>
 </ul>
 
 <h3>为什么不是 Firecracker</h3>
@@ -483,7 +747,7 @@ harbor run --dataset terminal-bench@2.0 \
 
 <h3>攻击面要注意</h3>
 
-<p>gVisor 不是银弹. 几个要点:</p>
+<p><strong>gVisor 不是银弹.</strong></p>
 
 <ul>
   <li>CVE-2023-3978 (DNS 解析) 等历史漏洞存在</li>
@@ -502,7 +766,7 @@ harbor run --dataset terminal-bench@2.0 \
   <li>用户自带脚本在集群侧跑</li>
 </ul>
 
-<p>Ray Sandbox 是比 <code>kubectl exec</code> 更安全的落点. 短期不动, 长期纳入架构考量.</p>
+<p>Ray Sandbox 是比 <code>kubectl exec</code> <span class="highlight">更安全的落点</span>. 短期不动, 长期纳入架构考量.</p>
 
 <h3>国内落地建议</h3>
 
@@ -516,11 +780,9 @@ harbor run --dataset terminal-bench@2.0 \
 <hr>
 
 <footer>
-  <p>
-    原文: <a href="https://www.anyscale.com/blog/announcing-native-sandboxing-in-ray" target="_blank">anyscale.com/blog/announcing-native-sandboxing-in-ray</a><br>
-    反馈: <a href="https://github.com/ray-project/ray/issues/65352" target="_blank">Ray Issue #65352</a><br>
-    Source: <a href="https://github.com/zaitian7liu-gif/ray-sandbox-share" target="_blank">github.com/zaitian7liu-gif/ray-sandbox-share</a>
-  </p>
+  原文 → <a href="https://www.anyscale.com/blog/announcing-native-sandboxing-in-ray" target="_blank">anyscale.com/blog/announcing-native-sandboxing-in-ray</a><br>
+  反馈 → <a href="https://github.com/ray-project/ray/issues/65352" target="_blank">Ray Issue #65352</a><br>
+  Source → <a href="https://github.com/zaitian7liu-gif/ray-sandbox-share" target="_blank">github.com/zaitian7liu-gif/ray-sandbox-share</a>
 </footer>
 
 </article>
@@ -528,6 +790,13 @@ harbor run --dataset terminal-bench@2.0 \
 <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/python.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/bash.min.js"></script>
-<script>hljs.highlightAll();</script>
+<script>
+hljs.highlightAll();
+const progress = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  progress.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+}, { passive: true });
+</script>
 </body>
 </html>
