@@ -10,35 +10,39 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
 <style>
   :root {
-    --bg: #faf7f2;
+    --bg: #eaf2fb;
+    --bg2: #d9e8f7;
     --bg-card: #ffffff;
-    --fg: #1a1a1a;
-    --fg-soft: #2d2d2d;
-    --dim: #6b6b6b;
-    --faint: #e8e2d6;
-    --accent: #d94f3a;
-    --accent2: #0d47a1;
-    --accent3: #f4a261;
-    --code-bg: #1e1e24;
-    --code-fg: #e8e3d8;
-    --quote-bg: #fff8e8;
-    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 10px 30px rgba(0,0,0,0.04);
+    --fg: #0f1a2b;
+    --fg-soft: #1f2d44;
+    --dim: #5b6b85;
+    --faint: #cfdeef;
+    --accent: #1e6fd9;
+    --accent2: #0a3b7a;
+    --accent3: #2fa5c7;
+    --accent4: #f5a524;
+    --code-bg: #0f1a2b;
+    --code-fg: #e4ecf7;
+    --quote-bg: #d9e8f7;
+    --shadow: 0 1px 3px rgba(10,59,122,0.06), 0 12px 32px rgba(10,59,122,0.06);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #16161a;
-      --bg-card: #1f1f24;
-      --fg: #ebe9e3;
-      --fg-soft: #d4d2cc;
-      --dim: #9a978f;
-      --faint: #2d2d33;
-      --accent: #ff6b57;
-      --accent2: #7cb6ff;
-      --accent3: #ffb476;
-      --code-bg: #0d0d12;
-      --code-fg: #e8e3d8;
-      --quote-bg: #2a241a;
-      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.2);
+      --bg: #0d1826;
+      --bg2: #15243a;
+      --bg-card: #182940;
+      --fg: #e4ecf7;
+      --fg-soft: #c7d3e5;
+      --dim: #8ea0bd;
+      --faint: #233853;
+      --accent: #6ba8ff;
+      --accent2: #a4c6ff;
+      --accent3: #4fc3dd;
+      --accent4: #ffcb6b;
+      --code-bg: #06101f;
+      --code-fg: #e4ecf7;
+      --quote-bg: #1b2d47;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 12px 32px rgba(0,0,0,0.3);
     }
   }
 
@@ -52,8 +56,9 @@
     font-size: 17px;
     line-height: 1.78;
     background-image:
-      radial-gradient(circle at 10% 0%, rgba(217,79,58,0.04) 0%, transparent 50%),
-      radial-gradient(circle at 90% 100%, rgba(13,71,161,0.04) 0%, transparent 50%);
+      radial-gradient(circle at 15% 0%, rgba(30,111,217,0.10) 0%, transparent 55%),
+      radial-gradient(circle at 85% 100%, rgba(47,165,199,0.10) 0%, transparent 55%);
+    background-attachment: fixed;
   }
 
   /* Reading progress */
@@ -63,10 +68,135 @@
     width: 0%; z-index: 100; transition: width 0.1s;
   }
 
+  /* Sidebar */
+  aside.sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 260px;
+    padding: 48px 24px 32px;
+    background: linear-gradient(180deg, var(--bg2), var(--bg));
+    border-right: 1px solid var(--faint);
+    overflow-y: auto;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+  }
+  aside.sidebar .brand {
+    margin-bottom: 32px;
+  }
+  aside.sidebar .brand .mark {
+    display: inline-block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--bg-card);
+    padding: 5px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--faint);
+    margin-bottom: 14px;
+  }
+  aside.sidebar .brand .title {
+    font-family: "Noto Serif SC", Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--fg);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  aside.sidebar .brand .title em {
+    color: var(--accent);
+    font-style: italic;
+  }
+  aside.sidebar nav {
+    flex: 1;
+  }
+  aside.sidebar nav .label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-left: 12px;
+  }
+  aside.sidebar ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: toc;
+  }
+  aside.sidebar ol li {
+    counter-increment: toc;
+    margin: 2px 0;
+  }
+  aside.sidebar ol li a {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 12px;
+    color: var(--fg-soft);
+    text-decoration: none;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.4;
+    transition: all 0.15s;
+    position: relative;
+  }
+  aside.sidebar ol li a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--dim);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  aside.sidebar ol li a:hover {
+    background: var(--bg-card);
+    color: var(--accent);
+  }
+  aside.sidebar ol li a.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  aside.sidebar ol li a.active::before { color: rgba(255,255,255,0.7); }
+  aside.sidebar .foot {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--dim);
+    padding-top: 20px;
+    border-top: 1px solid var(--faint);
+    line-height: 1.8;
+  }
+  aside.sidebar .foot a { color: var(--accent); border: none; }
+  aside.sidebar .foot a:hover { text-decoration: underline; }
+
+  /* Mobile menu toggle */
+  #menu-toggle {
+    display: none;
+    position: fixed; top: 16px; left: 16px;
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    border: 1px solid var(--faint);
+    background: var(--bg-card);
+    color: var(--accent);
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 30;
+    box-shadow: var(--shadow);
+  }
+
+  /* Article */
+  .main-wrap {
+    margin-left: 260px;
+    min-height: 100vh;
+  }
   article {
     max-width: 760px;
     margin: 0 auto;
-    padding: 60px 28px 120px;
+    padding: 60px 32px 120px;
   }
 
   /* Hero */
@@ -95,10 +225,11 @@
     border: 1px solid var(--accent);
     border-radius: 100px;
     margin-bottom: 24px;
+    background: var(--bg-card);
   }
   header.post h1 {
     font-family: "Noto Serif SC", "Playfair Display", Georgia, serif;
-    font-size: 52px;
+    font-size: 54px;
     line-height: 1.2;
     margin: 0 0 20px;
     letter-spacing: -0.02em;
@@ -123,7 +254,7 @@
     font-family: "JetBrains Mono", monospace;
     letter-spacing: 0.02em;
   }
-  header.post .meta a { color: var(--accent2); text-decoration: none; border-bottom: 1px solid currentColor; }
+  header.post .meta a { color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; }
   header.post .meta .sep { margin: 0 10px; opacity: 0.4; }
 
   /* Headings */
@@ -132,11 +263,11 @@
     font-size: 32px;
     line-height: 1.3;
     margin: 72px 0 20px;
+    padding-left: 20px;
     letter-spacing: -0.015em;
     font-weight: 700;
     color: var(--fg);
     position: relative;
-    padding-left: 20px;
     scroll-margin-top: 20px;
   }
   h2::before {
@@ -179,7 +310,7 @@
   }
 
   p { margin: 18px 0; color: var(--fg-soft); }
-  p .highlight { background: linear-gradient(180deg, transparent 60%, rgba(244,162,97,0.4) 60%); padding: 0 2px; }
+  p .highlight { background: linear-gradient(180deg, transparent 60%, rgba(245,165,36,0.4) 60%); padding: 0 2px; }
 
   ul, ol { padding-left: 28px; margin: 18px 0; }
   li { margin: 8px 0; color: var(--fg-soft); }
@@ -189,14 +320,14 @@
   strong { font-weight: 700; color: var(--fg); }
   em { color: var(--dim); font-style: italic; }
 
-  a { color: var(--accent2); text-decoration: none; border-bottom: 1px solid rgba(13,71,161,0.3); transition: border-color 0.2s; }
-  a:hover { border-bottom-color: var(--accent2); }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(30,111,217,0.3); transition: border-color 0.2s; }
+  a:hover { border-bottom-color: var(--accent); }
 
   code {
     font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
     font-size: 0.85em;
     background: var(--faint);
-    color: var(--accent);
+    color: var(--accent2);
     padding: 2px 8px;
     border-radius: 4px;
     font-weight: 500;
@@ -248,7 +379,7 @@
   }
   th {
     font-weight: 700;
-    background: linear-gradient(180deg, rgba(217,79,58,0.08), rgba(217,79,58,0.03));
+    background: linear-gradient(180deg, rgba(30,111,217,0.10), rgba(30,111,217,0.03));
     color: var(--accent);
     font-size: 13px;
     text-transform: uppercase;
@@ -256,7 +387,7 @@
   }
   td { color: var(--fg-soft); }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(244,162,97,0.05); }
+  tr:hover td { background: rgba(30,111,217,0.05); }
 
   /* Blockquote */
   blockquote {
@@ -296,7 +427,6 @@
     font-size: 12px;
   }
 
-  /* ASCII art */
   .ascii {
     font-family: "JetBrains Mono", Menlo, monospace;
     font-size: 13px;
@@ -311,7 +441,6 @@
     box-shadow: var(--shadow);
   }
 
-  /* Stat cards */
   .stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -326,8 +455,8 @@
     box-shadow: var(--shadow);
     border-top: 3px solid var(--accent);
   }
-  .stat:nth-child(2) { border-top-color: var(--accent2); }
-  .stat:nth-child(3) { border-top-color: var(--accent3); }
+  .stat:nth-child(2) { border-top-color: var(--accent3); }
+  .stat:nth-child(3) { border-top-color: var(--accent4); }
   .stat .num {
     display: block;
     font-family: "Noto Serif SC", Georgia, serif;
@@ -346,7 +475,6 @@
     font-family: "JetBrains Mono", monospace;
   }
 
-  /* Pull quote (big callout) */
   .pull-quote {
     text-align: center;
     margin: 48px -20px;
@@ -359,6 +487,7 @@
     border-top: 1px solid var(--accent);
     border-bottom: 1px solid var(--accent);
     position: relative;
+    background: linear-gradient(180deg, transparent, rgba(30,111,217,0.04), transparent);
   }
   .pull-quote strong { color: var(--accent); font-style: normal; }
   .pull-quote::before, .pull-quote::after {
@@ -369,7 +498,7 @@
     margin: 10px 0;
   }
 
-  footer {
+  footer.post-foot {
     margin-top: 80px;
     padding: 32px 0;
     text-align: center;
@@ -379,11 +508,23 @@
     font-family: "JetBrains Mono", monospace;
     line-height: 2;
   }
-  footer a { color: var(--accent2); }
+  footer.post-foot a { color: var(--accent); }
 
+  @media (max-width: 900px) {
+    aside.sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.25s;
+      width: 280px;
+      box-shadow: 10px 0 40px rgba(0,0,0,0.2);
+    }
+    aside.sidebar.open { transform: translateX(0); }
+    #menu-toggle { display: flex; align-items: center; justify-content: center; }
+    .main-wrap { margin-left: 0; }
+    article { padding-top: 76px; }
+  }
   @media (max-width: 640px) {
     body { font-size: 16px; }
-    article { padding: 40px 20px 80px; }
+    article { padding: 76px 20px 80px; }
     header.post h1 { font-size: 36px; }
     header.post .lede { font-size: 16px; }
     h2 { font-size: 26px; margin-top: 56px; }
@@ -398,6 +539,36 @@
 
 <div id="progress"></div>
 
+<button id="menu-toggle" aria-label="菜单">☰</button>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="mark">Tech Share</div>
+    <div class="title">Ray 原生<em>沙箱</em></div>
+  </div>
+  <nav>
+    <div class="label">目录</div>
+    <ol>
+      <li><a href="#part-1">背景与动机</a></li>
+      <li><a href="#part-2">gVisor 扫盲</a></li>
+      <li><a href="#part-3">架构设计</a></li>
+      <li><a href="#part-4">API 两层设计</a></li>
+      <li><a href="#part-5">规模数据</a></li>
+      <li><a href="#part-6">网络与文件</a></li>
+      <li><a href="#part-7">MCP + 加固</a></li>
+      <li><a href="#part-8">Harbor 实测</a></li>
+      <li><a href="#part-9">路线图</a></li>
+      <li><a href="#part-10">讨论</a></li>
+    </ol>
+  </nav>
+  <div class="foot">
+    2026·10·21<br>
+    <a href="https://www.anyscale.com/blog/announcing-native-sandboxing-in-ray" target="_blank">原文 ↗</a><br>
+    <a href="https://github.com/zaitian7liu-gif/ray-sandbox-share" target="_blank">GitHub ↗</a>
+  </div>
+</aside>
+
+<div class="main-wrap">
 <article>
 
 <header class="post">
@@ -423,7 +594,7 @@ Ray 2.58 把沙箱做成了原生能力, 2026 年 8 月 25 日由 Anyscale 和 G
 这篇把文章拆开讲, 顺带补一些对标和落地想法.
 </p>
 
-<h2><span class="num">PART 01</span>背景与动机</h2>
+<h2 id="part-1"><span class="num">PART 01</span>背景与动机</h2>
 
 <p>这套东西主要给 <strong>Agentic RL</strong> 和 <strong>Coding Agent</strong> 后训练用. 场景的共同点是: 需要大规模并发跑 <em>模型生成的代码</em>. 三个硬约束:</p>
 
@@ -447,7 +618,7 @@ Ray 2.58 把沙箱做成了原生能力, 2026 年 8 月 25 日由 Anyscale 和 G
   <strong>gVisor</strong> handles isolation.
 </div>
 
-<h2><span class="num">PART 02</span>gVisor 快速扫盲</h2>
+<h2 id="part-2"><span class="num">PART 02</span>gVisor 快速扫盲</h2>
 
 <p>团队可能不熟 gVisor, 先铺垫:</p>
 
@@ -472,7 +643,7 @@ Ray 2.58 把沙箱做成了原生能力, 2026 年 8 月 25 日由 Anyscale 和 G
 
 <p>gVisor 的甜点: <strong>隔离够强 + 启动够快 + OCI 生态</strong>.</p>
 
-<h2><span class="num">PART 03</span>架构设计</h2>
+<h2 id="part-3"><span class="num">PART 03</span>架构设计</h2>
 
 <div class="ascii">┌──────────────────────────────────────────┐
 │            Ray Cluster                   │
@@ -501,7 +672,7 @@ Ray 2.58 把沙箱做成了原生能力, 2026 年 8 月 25 日由 Anyscale 和 G
 
 <p>好处明显: 不用自己写调度器 / 资源管理 / 控制面. 把 <span class="highlight">Ray 当分布式 OS, 沙箱当"进程"</span>就对了.</p>
 
-<h2><span class="num">PART 04</span>API 两层设计</h2>
+<h2 id="part-4"><span class="num">PART 04</span>API 两层设计</h2>
 
 <h3>高层 <code>sandbox</code> 模块</h3>
 
@@ -579,7 +750,7 @@ sb = sandbox.create(
     _oci_spec_transform_fn=harden,
 )</code></pre>
 
-<h2><span class="num">PART 05</span>规模数据</h2>
+<h2 id="part-5"><span class="num">PART 05</span>规模数据</h2>
 
 <p>官方 benchmark: GKE 上 <span class="highlight">20 秒内启动 100,000 个 gVisor 沙箱</span>, 分布在数千节点.</p>
 
@@ -608,7 +779,7 @@ sb = sandbox.create(
 
 <p>对比独立沙箱服务: 通常要过 K8s API server + kube-scheduler, 这规模下 API server 直接压崩.</p>
 
-<h2><span class="num">PART 06</span>网络与文件</h2>
+<h2 id="part-6"><span class="num">PART 06</span>网络与文件</h2>
 
 <h3>四种网络模式</h3>
 
@@ -631,7 +802,7 @@ sb = sandbox.create(
   <li><strong>大目录</strong> (代码仓库/数据集): tar 打包传输, 保留权限、符号链接、空目录; 跨节点自动走 object store</li>
 </ul>
 
-<h2><span class="num">PART 07</span>MCP 后端 + 安全加固</h2>
+<h2 id="part-7"><span class="num">PART 07</span>MCP 后端 + 安全加固</h2>
 
 <p>Ray Sandbox 可作 MCP tool backend. FastMCP 示例:</p>
 
@@ -667,7 +838,7 @@ def run_python(code: str) -> str:
   <li>用后即焚, 不复用沙箱实例</li>
 </ul>
 
-<h2><span class="num">PART 08</span>Harbor 集成实测</h2>
+<h2 id="part-8"><span class="num">PART 08</span>Harbor 集成实测</h2>
 
 <p>Harbor 是 coding agent 评测框架, 跑 Claude Code / OpenHands / Codex CLI, 支持 SWE-Bench / Terminal-Bench 等基准. Ray Sandbox 作为后端:</p>
 
@@ -711,7 +882,7 @@ harbor run --dataset terminal-bench@2.0 \
 
 <p><em>目前不支持 Compose、GPU、allowlist 任务.</em></p>
 
-<h2><span class="num">PART 09</span>路线图</h2>
+<h2 id="part-9"><span class="num">PART 09</span>路线图</h2>
 
 <ol>
   <li><strong>REST API 服务</strong> — 训练集群与沙箱集群物理隔离 (PR #65633 原型中)</li>
@@ -724,7 +895,7 @@ harbor run --dataset terminal-bench@2.0 \
 
 <blockquote>REST API 这条最关键. 训练集群通常在内网, 跑不可信代码必须隔离域.</blockquote>
 
-<h2><span class="num">PART 10</span>讨论</h2>
+<h2 id="part-10"><span class="num">PART 10</span>讨论</h2>
 
 <h3>vs E2B / Modal / Daytona</h3>
 
@@ -779,24 +950,45 @@ harbor run --dataset terminal-bench@2.0 \
 
 <hr>
 
-<footer>
+<footer class="post-foot">
   原文 → <a href="https://www.anyscale.com/blog/announcing-native-sandboxing-in-ray" target="_blank">anyscale.com/blog/announcing-native-sandboxing-in-ray</a><br>
   反馈 → <a href="https://github.com/ray-project/ray/issues/65352" target="_blank">Ray Issue #65352</a><br>
   Source → <a href="https://github.com/zaitian7liu-gif/ray-sandbox-share" target="_blank">github.com/zaitian7liu-gif/ray-sandbox-share</a>
 </footer>
 
 </article>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/python.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/bash.min.js"></script>
 <script>
 hljs.highlightAll();
+
 const progress = document.getElementById('progress');
-window.addEventListener('scroll', () => {
+const sidebar = document.getElementById('sidebar');
+const toggle = document.getElementById('menu-toggle');
+const tocLinks = document.querySelectorAll('aside.sidebar ol a');
+const sections = Array.from(document.querySelectorAll('h2[id]'));
+
+toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+tocLinks.forEach(a => a.addEventListener('click', () => sidebar.classList.remove('open')));
+
+function onScroll() {
   const h = document.documentElement;
   progress.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
-}, { passive: true });
+
+  const mid = h.scrollTop + window.innerHeight * 0.3;
+  let current = sections[0]?.id;
+  for (const s of sections) {
+    if (s.offsetTop <= mid) current = s.id;
+  }
+  tocLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+onScroll();
 </script>
 </body>
 </html>
