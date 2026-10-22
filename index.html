@@ -158,6 +158,7 @@
     z-index: 30; box-shadow: var(--shadow);
   }
 
+  aside.sidebar ol li a .time { display: none; }
   .main-wrap { margin-left: 280px; min-height: 100vh; }
   article { max-width: 820px; margin: 0 auto; padding: 60px 32px 120px; }
 
@@ -267,17 +268,7 @@
     display: block; margin-bottom: 6px;
     letter-spacing: 0.1em; font-weight: 500;
   }
-  h2 .time {
-    display: inline-block;
-    margin-left: 10px;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 13px; font-weight: 500;
-    color: var(--accent4);
-    background: rgba(245,165,36,0.1);
-    padding: 2px 10px; border-radius: 100px;
-    vertical-align: middle;
-    letter-spacing: 0.05em;
-  }
+  h2 .time { display: none; }
 
   h3 {
     font-size: 21px; margin: 36px 0 12px;
@@ -530,20 +521,20 @@
   <div class="brand">
     <div class="mark">Internal · Ray Team</div>
     <div class="title">Ray 原生<em>沙箱</em></div>
-    <div class="meta">18 min · 技术分享</div>
+    <div class="meta">技术分享</div>
   </div>
   <nav>
     <div class="label">目录</div>
     <ol>
-      <li><a href="#part-1">RL / 后训练 扫盲<span class="time">3'</span></a></li>
-      <li><a href="#part-2">沙箱是啥<span class="time">2'</span></a></li>
-      <li><a href="#part-3">开场 + 真正痛点<span class="time">2'</span></a></li>
-      <li><a href="#part-4">核心架构<span class="time">2'</span></a></li>
-      <li><a href="#part-5">Actor 映射详解<span class="time">2'</span></a></li>
-      <li><a href="#part-6">架构威力<span class="time">2'</span></a></li>
-      <li><a href="#part-7">实战能力<span class="time">1'</span></a></li>
-      <li><a href="#part-8">生态落地<span class="time">2'</span></a></li>
-      <li><a href="#part-9">RL 用户反馈<span class="time">2'</span></a></li>
+      <li><a href="#part-1">RL 与后训练</a></li>
+      <li><a href="#part-2">沙箱技术</a></li>
+      <li><a href="#part-3">核心痛点</a></li>
+      <li><a href="#part-4">核心架构</a></li>
+      <li><a href="#part-5">Actor 映射</a></li>
+      <li><a href="#part-6">规模与性能</a></li>
+      <li><a href="#part-7">实战能力</a></li>
+      <li><a href="#part-8">生态落地</a></li>
+      <li><a href="#part-9">反馈与路线图</a></li>
     </ol>
   </nav>
   <div class="foot">
@@ -557,7 +548,7 @@
 <article>
 
 <header class="post">
-  <div class="eyebrow">Internal · Ray Team · 18 min</div>
+  <div class="eyebrow">Internal · Ray Team</div>
   <h1>Ray 原生<span class="accent">沙箱</span></h1>
   <p class="lede">
     把沙箱做成 Ray 一等公民, 消除 RL 后训练场景中的第二套控制面. 来自 RL 用户的使用反馈 + 对 Ray 团队的功能请求.
@@ -577,23 +568,23 @@
 </div>
 
 <div class="agenda">
-  <div class="ttl">分享议程 · 18 min</div>
+  <div class="ttl">分享提纲</div>
   <table>
-    <tr><td>00:00</td><td>3'</td><td>RL / 后训练 扫盲 (建共识)</td></tr>
-    <tr><td>03:00</td><td>2'</td><td>沙箱是啥 (gVisor vs Docker)</td></tr>
-    <tr><td>05:00</td><td>2'</td><td>开场 + 真正痛点 (架构不是性能)</td></tr>
-    <tr><td>07:00</td><td>2'</td><td>核心架构: Sandbox = Actor + gVisor</td></tr>
-    <tr><td>09:00</td><td>2'</td><td>Actor 映射详解 (生命周期/调度/故障)</td></tr>
-    <tr><td>11:00</td><td>2'</td><td>架构威力: 为啥能到 10 万沙箱</td></tr>
-    <tr><td>13:00</td><td>1'</td><td>实战能力: 网络 / OCI 回调</td></tr>
-    <tr><td>14:00</td><td>2'</td><td>生态落地: Harbor / SkyRL / veRL</td></tr>
-    <tr><td>16:00</td><td>2'</td><td>RL 用户反馈 + 功能请求</td></tr>
+    <tr><td>01</td><td></td><td>RL 与后训练: 场景定位</td></tr>
+    <tr><td>02</td><td></td><td>沙箱技术: gVisor 与 Docker 对比</td></tr>
+    <tr><td>03</td><td></td><td>核心痛点: 架构, 而非性能</td></tr>
+    <tr><td>04</td><td></td><td>核心架构: Sandbox = Actor + gVisor</td></tr>
+    <tr><td>05</td><td></td><td>Actor 映射: 生命周期、调度、故障恢复</td></tr>
+    <tr><td>06</td><td></td><td>规模与性能: 10 万沙箱的架构支撑</td></tr>
+    <tr><td>07</td><td></td><td>实战能力: 网络模式与 OCI 回调</td></tr>
+    <tr><td>08</td><td></td><td>生态落地: Harbor、SkyRL、veRL</td></tr>
+    <tr><td>09</td><td></td><td>RL 用户反馈与功能请求</td></tr>
   </table>
 </div>
 
-<h2 id="part-1"><span class="num">PART 01</span>RL / 后训练 扫盲 — 先建共识<span class="time">3 min</span></h2>
+<h2 id="part-1"><span class="num">PART 01</span>RL 与后训练: 场景定位</h2>
 
-<p>Ray 团队做分布式比谁都熟, 但 RL 后训练这几年变化大, 先 3 分钟拉齐语境.</p>
+<p>RL 后训练在近年快速演进, 本节先对齐术语和场景, 为后续讨论建立基础.</p>
 
 <h3>后训练三种玩法</h3>
 
@@ -661,9 +652,9 @@ avg_turns_per_episode  = 10 (ReAct 多轮)
 
 <p>→ 已经是**事实标准**. Ray Sandbox 不是来抢占新市场, 是补**已有用户群**的最后一块.</p>
 
-<h2 id="part-2"><span class="num">PART 02</span>沙箱是啥 — gVisor vs Docker<span class="time">2 min</span></h2>
+<h2 id="part-2"><span class="num">PART 02</span>沙箱技术: gVisor 与 Docker 对比</h2>
 
-<h3>"沙箱" 在这里的定义</h3>
+<h3>沙箱的定义</h3>
 
 <p>一个<strong>一次性的、强隔离的 Linux 环境</strong>, 用来跑不可信代码. 跑完销毁. 要求:</p>
 
@@ -722,9 +713,9 @@ gVisor Sentry
   <p>Agentic RL 要的是 <strong>隔离够强 + 启动够快 + OCI 生态</strong>. gVisor 刚好是这三者交集的甜点. Firecracker 隔离更强但启动慢 2-3 倍, 10 万并发不划算.</p>
 </div>
 
-<h2 id="part-3"><span class="num">PART 03</span>开场 + 真正痛点<span class="time">2 min</span></h2>
+<h2 id="part-3"><span class="num">PART 03</span>核心痛点: 架构, 而非性能</h2>
 
-<p>有了 Part 1/2 的共识, 现在讲核心观点. 一次典型 Agentic RL 要几千万次沙箱执行. 老方案有两条路:</p>
+<p>一次典型 Agentic RL 训练需要几千万次沙箱执行. 老方案有两条路:</p>
 
 <div class="compare">
   <div class="side bad">
@@ -765,7 +756,7 @@ gVisor Sentry
   <strong>消除第二套控制面</strong>.
 </div>
 
-<h2 id="part-4"><span class="num">PART 04</span>核心架构 — Sandbox 怎么融入 Ray<span class="time">2 min</span></h2>
+<h2 id="part-4"><span class="num">PART 04</span>核心架构: Sandbox = Actor + gVisor</h2>
 
 <h3>一句话定义</h3>
 
@@ -889,9 +880,9 @@ runsc (OCI, gVisor)
 
 <p>Ray 没复用 Docker 引擎, 直接调 runsc. 这省掉的不只是一个进程, 是<strong>整条控制路径</strong>.</p>
 
-<h2 id="part-5"><span class="num">PART 05</span>Actor 映射详解 — 沙箱到底怎么"是" Actor<span class="time">2 min</span></h2>
+<h2 id="part-5"><span class="num">PART 05</span>Actor 映射: 沙箱如何复用 Actor 原语</h2>
 
-<p>Ray 团队最在意的问题: Sandbox 怎么复用 Actor 已有能力. 一张对照表讲清:</p>
+<p>Sandbox 复用 Actor 已有能力的对照关系:</p>
 
 <table>
   <tr><th>Actor 原生能力</th><th>Sandbox 怎么用</th></tr>
@@ -980,7 +971,7 @@ class RolloutWorker:
 
 <p>关键: RolloutWorker 和 Sandbox <strong>很可能在不同节点</strong> (GPU 节点 vs CPU 节点). <code>sb.exec.remote()</code> 自动走 Ray RPC, 用户不用关心跨节点传输. <strong>Ray 把分布式复杂度完全藏住</strong>.</p>
 
-<h2 id="part-6"><span class="num">PART 06</span>架构威力拆解 — 10 万沙箱背后<span class="time">2 min</span></h2>
+<h2 id="part-6"><span class="num">PART 06</span>规模与性能: 10 万沙箱的架构支撑</h2>
 
 <h3>benchmark 数字拆算</h3>
 
@@ -1031,7 +1022,7 @@ class RolloutWorker:
 
 <p>换句话说, Ray Sandbox 的性能不是"刚好够用", 是<strong>把这个变量从 RL 系统架构里消去了</strong>. RL 用户不用再把沙箱启动延迟当设计约束.</p>
 
-<h2 id="part-7"><span class="num">PART 07</span>实战能力 — 两个最关键的<span class="time">1 min</span></h2>
+<h2 id="part-7"><span class="num">PART 07</span>实战能力: 网络模式与 OCI 回调</h2>
 
 <h3>网络 4 模式: 架构级安全默认</h3>
 
@@ -1060,7 +1051,7 @@ class RolloutWorker:
 
 <p>其他能力 (文件传输 / MCP 后端) 一笔带过 — 都是 API 便利, 不是架构创新.</p>
 
-<h2 id="part-8"><span class="num">PART 08</span>生态落地 — 三个框架的现状<span class="time">2 min</span></h2>
+<h2 id="part-8"><span class="num">PART 08</span>生态落地: Harbor、SkyRL、veRL</h2>
 
 <h3>Harbor — 已验证可生产用</h3>
 
@@ -1128,9 +1119,9 @@ class CodeTool(BaseTool):
   <tr><td><strong>Ray Native</strong></td><td><strong>Ray 单套</strong></td><td>syscall 10-30%</td><td><strong>高</strong></td><td><strong>大规模 Agentic RL</strong></td></tr>
 </table>
 
-<h2 id="part-9"><span class="num">PART 09</span>RL 用户反馈 + 功能请求<span class="time">2 min</span></h2>
+<h2 id="part-9"><span class="num">PART 09</span>RL 用户反馈与功能请求</h2>
 
-<p>这部分是分享的落点 — <strong>我们希望 Ray 团队继续做什么</strong>.</p>
+<p>本节总结生产落地中遇到的阻塞, 以及对 Ray 团队的功能请求.</p>
 
 <h3>当前阻塞生产的四个硬门槛</h3>
 
