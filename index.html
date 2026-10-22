@@ -586,15 +586,25 @@
 
 <p>RL 后训练在近年快速演进, 本节先对齐术语和场景, 为后续讨论建立基础.</p>
 
-<h3>后训练三种玩法</h3>
+<h3>后训练四种玩法</h3>
 
 <table>
-  <tr><th>玩法</th><th>做啥</th><th>要 RL loop 吗</th></tr>
-  <tr><td>SFT (监督微调)</td><td>拿人工标注数据直接训</td><td>❌ 普通训练</td></tr>
-  <tr><td>DPO (偏好对齐)</td><td>拿 (好答案, 坏答案) pair 训</td><td>❌ 要 reference model</td></tr>
-  <tr><td>RLHF / GRPO</td><td>模型自己产 trajectory + 打分</td><td>✅ 完整 loop</td></tr>
-  <tr><td><strong>Agentic RL</strong></td><td><strong>模型调工具 + 跑代码 + 多轮</strong></td><td><strong>✅ + sandbox</strong></td></tr>
+  <tr><th>玩法</th><th>训练方式</th><th>数据/反馈来源</th></tr>
+  <tr><td>SFT (监督微调)</td><td>人工标注指令-回答样本, 直接训练</td><td>静态标注数据集</td></tr>
+  <tr><td>DPO (偏好对齐)</td><td>(优选, 劣选) 样本对训练, 依赖 Reference Model</td><td>静态偏好数据集</td></tr>
+  <tr><td>RLHF / GRPO</td><td>模型自主生成 trajectory, 奖励打分形成完整训练闭环</td><td>在线采样 + 文本层奖励</td></tr>
+  <tr><td><strong>Agentic RL</strong></td><td><strong>多轮调用工具 / 生成代码, 沙箱执行获取真实反馈</strong></td><td><strong>外部环境执行结果</strong></td></tr>
 </table>
+
+<div class="callout info">
+  <div class="tag">关键区分</div>
+  <ul style="margin: 6px 0 0;">
+    <li><strong>SFT / DPO</strong>: 数据是<strong>预先准备好的静态数据集</strong>, 无在线环境交互</li>
+    <li><strong>RLHF / GRPO</strong>: 在线采样 trajectory, 但奖励大多是<strong>文本层面打分</strong> (reward model 评分)</li>
+    <li><strong>Agentic RL</strong>: 奖励来自<strong>外部环境执行结果</strong> (代码在沙箱里跑出的输出), 属于交互式强化学习, 必须沙箱</li>
+  </ul>
+  <p style="margin-top: 10px;">GRPO 是 RLHF 的轻量化变体 — 模型自己生成多条 trajectory, <strong>组内对比</strong>得到奖励, 不需要单独训练 reward model.</p>
+</div>
 
 <p>Ray 对 SFT/DPO 用处有限 (就是 FSDP 包一下). <strong>真用武之地在 RLHF 和 Agentic RL</strong>, 因为要同时跑三类负载:</p>
 
