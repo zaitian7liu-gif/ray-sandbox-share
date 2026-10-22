@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ray 原生沙箱 — 技术分享</title>
+<title>Ray 原生沙箱 — 技术分享 (Ray 团队内部)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
@@ -73,14 +73,14 @@
 
   aside.sidebar {
     position: fixed; top: 0; left: 0; bottom: 0;
-    width: 260px;
-    padding: 48px 24px 32px;
+    width: 280px;
+    padding: 44px 22px 28px;
     background: linear-gradient(180deg, var(--bg2), var(--bg));
     border-right: 1px solid var(--faint);
     overflow-y: auto; z-index: 20;
     display: flex; flex-direction: column;
   }
-  aside.sidebar .brand { margin-bottom: 32px; }
+  aside.sidebar .brand { margin-bottom: 24px; }
   aside.sidebar .brand .mark {
     display: inline-block;
     font-family: "JetBrains Mono", monospace;
@@ -98,12 +98,17 @@
     letter-spacing: -0.01em;
   }
   aside.sidebar .brand .title em { color: var(--accent); font-style: italic; }
+  aside.sidebar .brand .meta {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; color: var(--dim);
+    margin-top: 8px;
+  }
   aside.sidebar nav { flex: 1; }
   aside.sidebar nav .label {
     font-family: "JetBrains Mono", monospace;
     font-size: 10px; letter-spacing: 0.2em;
     color: var(--dim); text-transform: uppercase;
-    margin-bottom: 10px; padding-left: 12px;
+    margin-bottom: 10px; padding-left: 10px;
   }
   aside.sidebar ol {
     list-style: none; padding: 0; margin: 0;
@@ -112,10 +117,10 @@
   aside.sidebar ol li { counter-increment: toc; margin: 2px 0; }
   aside.sidebar ol li a {
     display: flex; align-items: baseline; gap: 10px;
-    padding: 8px 12px;
+    padding: 7px 10px;
     color: var(--fg-soft); text-decoration: none;
     border: none; border-radius: 6px;
-    font-size: 14px; line-height: 1.4;
+    font-size: 13.5px; line-height: 1.35;
     transition: all 0.15s; position: relative;
   }
   aside.sidebar ol li a::before {
@@ -124,13 +129,19 @@
     font-size: 11px; color: var(--dim);
     font-weight: 500; flex-shrink: 0;
   }
+  aside.sidebar ol li a .time {
+    margin-left: auto;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px; color: var(--dim);
+    flex-shrink: 0;
+  }
   aside.sidebar ol li a:hover { background: var(--bg-card); color: var(--accent); }
   aside.sidebar ol li a.active { background: var(--accent); color: #fff; }
-  aside.sidebar ol li a.active::before { color: rgba(255,255,255,0.7); }
+  aside.sidebar ol li a.active::before, aside.sidebar ol li a.active .time { color: rgba(255,255,255,0.75); }
   aside.sidebar .foot {
     font-family: "JetBrains Mono", monospace;
     font-size: 11px; color: var(--dim);
-    padding-top: 20px; border-top: 1px solid var(--faint);
+    padding-top: 18px; border-top: 1px solid var(--faint);
     line-height: 1.8;
   }
   aside.sidebar .foot a { color: var(--accent); border: none; }
@@ -147,12 +158,12 @@
     z-index: 30; box-shadow: var(--shadow);
   }
 
-  .main-wrap { margin-left: 260px; min-height: 100vh; }
-  article { max-width: 780px; margin: 0 auto; padding: 60px 32px 120px; }
+  .main-wrap { margin-left: 280px; min-height: 100vh; }
+  article { max-width: 820px; margin: 0 auto; padding: 60px 32px 120px; }
 
   header.post {
     text-align: center;
-    margin-bottom: 56px; padding-bottom: 48px;
+    margin-bottom: 48px; padding-bottom: 40px;
     position: relative;
   }
   header.post::after {
@@ -173,14 +184,14 @@
   }
   header.post h1 {
     font-family: "Noto Serif SC", "Playfair Display", Georgia, serif;
-    font-size: 54px; line-height: 1.2;
+    font-size: 52px; line-height: 1.2;
     margin: 0 0 20px; letter-spacing: -0.02em;
     font-weight: 700; color: var(--fg);
   }
   header.post h1 .accent { color: var(--accent); font-style: italic; }
   header.post .lede {
     font-size: 19px; color: var(--dim);
-    max-width: 560px; margin: 0 auto 28px;
+    max-width: 620px; margin: 0 auto 24px;
     line-height: 1.6; font-weight: 400;
   }
   header.post .meta {
@@ -191,35 +202,54 @@
   header.post .meta a { color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; }
   header.post .meta .sep { margin: 0 10px; opacity: 0.4; }
 
-  /* TLDR card */
   .tldr {
     background: linear-gradient(135deg, var(--accent), var(--accent3));
-    border-radius: 14px; padding: 24px 28px;
-    color: #fff; margin: 32px 0 48px;
+    border-radius: 14px; padding: 26px 30px;
+    color: #fff; margin: 28px 0 48px;
     box-shadow: 0 10px 32px rgba(30,111,217,0.3);
-    position: relative;
   }
   .tldr .label {
     display: inline-block;
     font-family: "JetBrains Mono", monospace;
     font-size: 11px; letter-spacing: 0.2em;
-    opacity: 0.85; text-transform: uppercase;
+    opacity: 0.9; text-transform: uppercase;
     margin-bottom: 10px;
     border: 1px solid rgba(255,255,255,0.4);
     padding: 3px 10px; border-radius: 100px;
   }
   .tldr p {
     margin: 0; color: #fff;
-    font-size: 20px; line-height: 1.6;
+    font-size: 19px; line-height: 1.6;
     font-weight: 500;
     font-family: "Noto Serif SC", Georgia, serif;
   }
   .tldr strong { color: #fff; background: rgba(255,255,255,0.18); padding: 0 6px; border-radius: 4px; }
 
+  .agenda {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin: 28px 0 40px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--accent4);
+  }
+  .agenda .ttl {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; letter-spacing: 0.15em;
+    color: var(--accent4);
+    text-transform: uppercase; font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .agenda table { margin: 0; box-shadow: none; background: transparent; }
+  .agenda th { background: transparent; border: none; padding: 4px 0; }
+  .agenda td { border: none; padding: 4px 0; }
+  .agenda td:first-child { color: var(--dim); font-family: "JetBrains Mono", monospace; font-size: 13px; width: 70px; }
+  .agenda td:nth-child(2) { font-weight: 600; width: 48px; color: var(--accent); font-family: "JetBrains Mono", monospace; font-size: 13px; }
+
   h2 {
     font-family: "Noto Serif SC", Georgia, serif;
-    font-size: 32px; line-height: 1.3;
-    margin: 72px 0 20px; padding-left: 20px;
+    font-size: 30px; line-height: 1.3;
+    margin: 68px 0 18px; padding-left: 20px;
     letter-spacing: -0.015em; font-weight: 700;
     color: var(--fg); position: relative;
     scroll-margin-top: 20px;
@@ -233,13 +263,24 @@
   }
   h2 .num {
     font-family: "JetBrains Mono", monospace;
-    font-size: 14px; color: var(--accent);
+    font-size: 13px; color: var(--accent);
     display: block; margin-bottom: 6px;
     letter-spacing: 0.1em; font-weight: 500;
   }
+  h2 .time {
+    display: inline-block;
+    margin-left: 10px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px; font-weight: 500;
+    color: var(--accent4);
+    background: rgba(245,165,36,0.1);
+    padding: 2px 10px; border-radius: 100px;
+    vertical-align: middle;
+    letter-spacing: 0.05em;
+  }
 
   h3 {
-    font-size: 22px; margin: 40px 0 14px;
+    font-size: 21px; margin: 36px 0 12px;
     font-weight: 700; color: var(--fg-soft);
     letter-spacing: -0.01em;
   }
@@ -250,11 +291,11 @@
     text-transform: uppercase; letter-spacing: 0.08em;
   }
 
-  p { margin: 18px 0; color: var(--fg-soft); }
+  p { margin: 16px 0; color: var(--fg-soft); }
   p .highlight { background: linear-gradient(180deg, transparent 60%, rgba(245,165,36,0.4) 60%); padding: 0 2px; }
 
-  ul, ol { padding-left: 28px; margin: 18px 0; }
-  li { margin: 8px 0; color: var(--fg-soft); }
+  ul, ol { padding-left: 26px; margin: 16px 0; }
+  li { margin: 7px 0; color: var(--fg-soft); }
   ul li::marker { color: var(--accent); }
   ol li::marker { color: var(--accent2); font-weight: 700; }
 
@@ -274,7 +315,7 @@
   pre {
     background: var(--code-bg); color: var(--code-fg);
     border-radius: 10px; padding: 22px 26px;
-    overflow-x: auto; margin: 24px 0;
+    overflow-x: auto; margin: 22px 0;
     line-height: 1.6; box-shadow: var(--shadow);
     position: relative;
   }
@@ -293,7 +334,7 @@
 
   table {
     width: 100%; border-collapse: separate; border-spacing: 0;
-    margin: 24px 0; font-size: 15px;
+    margin: 22px 0; font-size: 15px;
     background: var(--bg-card);
     border-radius: 10px; overflow: hidden;
     box-shadow: var(--shadow);
@@ -311,8 +352,8 @@
   tr:hover td { background: rgba(30,111,217,0.05); }
 
   blockquote {
-    border: none; margin: 28px 0;
-    padding: 20px 28px;
+    border: none; margin: 24px 0;
+    padding: 18px 26px;
     background: var(--quote-bg);
     border-left: 4px solid var(--accent3);
     border-radius: 0 10px 10px 0;
@@ -330,7 +371,7 @@
     font-family: Georgia, serif; line-height: 1;
   }
 
-  hr { border: 0; text-align: center; margin: 56px 0; }
+  hr { border: 0; text-align: center; margin: 48px 0; }
   hr::after {
     content: "✦ ✦ ✦";
     color: var(--accent3);
@@ -342,18 +383,18 @@
     font-size: 13px; line-height: 1.5;
     color: var(--code-fg); white-space: pre;
     background: var(--code-bg);
-    padding: 24px; border-radius: 10px;
-    overflow-x: auto; margin: 24px 0;
+    padding: 22px; border-radius: 10px;
+    overflow-x: auto; margin: 22px 0;
     box-shadow: var(--shadow);
   }
 
   .stats {
     display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 16px; margin: 28px 0;
+    gap: 16px; margin: 24px 0;
   }
   .stat {
     background: var(--bg-card);
-    border-radius: 12px; padding: 24px 20px;
+    border-radius: 12px; padding: 22px 18px;
     text-align: center;
     box-shadow: var(--shadow);
     border-top: 3px solid var(--accent);
@@ -363,7 +404,7 @@
   .stat .num {
     display: block;
     font-family: "Noto Serif SC", Georgia, serif;
-    font-size: 40px; line-height: 1;
+    font-size: 38px; line-height: 1;
     font-weight: 700; color: var(--fg);
     margin-bottom: 6px; letter-spacing: -0.02em;
   }
@@ -374,10 +415,10 @@
   }
 
   .pull-quote {
-    text-align: center; margin: 48px -20px;
-    padding: 40px 32px;
+    text-align: center; margin: 44px -20px;
+    padding: 36px 32px;
     font-family: "Noto Serif SC", Georgia, serif;
-    font-size: 26px; line-height: 1.4;
+    font-size: 24px; line-height: 1.4;
     font-style: italic; color: var(--fg);
     border-top: 1px solid var(--accent);
     border-bottom: 1px solid var(--accent);
@@ -391,9 +432,8 @@
     margin: 10px 0;
   }
 
-  /* Callout box */
   .callout {
-    margin: 24px 0;
+    margin: 22px 0;
     padding: 18px 22px;
     border-radius: 10px;
     background: var(--bg-card);
@@ -417,11 +457,10 @@
   .callout p:first-of-type { margin-top: 0; }
   .callout p:last-of-type { margin-bottom: 0; }
 
-  /* Comparison path diagram */
   .compare {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px; margin: 24px 0;
+    gap: 16px; margin: 22px 0;
   }
   .compare .side {
     background: var(--bg-card);
@@ -436,6 +475,7 @@
   }
   .compare .side.bad .ttl { color: var(--accent5); }
   .compare .side.good .ttl { color: var(--accent6); }
+  .compare .side.neutral .ttl { color: var(--accent); }
   .compare .side pre {
     margin: 0; padding: 12px 14px;
     font-size: 12.5px; line-height: 1.5;
@@ -445,7 +485,7 @@
   .compare .side pre code { padding-top: 0; font-size: 12.5px; }
 
   footer.post-foot {
-    margin-top: 80px; padding: 32px 0;
+    margin-top: 72px; padding: 28px 0;
     text-align: center;
     border-top: 1px solid var(--faint);
     color: var(--dim); font-size: 13px;
@@ -454,11 +494,11 @@
   }
   footer.post-foot a { color: var(--accent); }
 
-  @media (max-width: 900px) {
+  @media (max-width: 980px) {
     aside.sidebar {
       transform: translateX(-100%);
       transition: transform 0.25s;
-      width: 280px;
+      width: 290px;
       box-shadow: 10px 0 40px rgba(0,0,0,0.2);
     }
     aside.sidebar.open { transform: translateX(0); }
@@ -470,13 +510,13 @@
   @media (max-width: 640px) {
     body { font-size: 16px; }
     article { padding: 76px 20px 80px; }
-    header.post h1 { font-size: 36px; }
+    header.post h1 { font-size: 34px; }
     header.post .lede { font-size: 16px; }
-    h2 { font-size: 26px; margin-top: 56px; }
-    h3 { font-size: 19px; }
+    h2 { font-size: 24px; margin-top: 54px; }
+    h3 { font-size: 18px; }
     pre { padding: 18px 20px; font-size: 13px; }
     .stats { grid-template-columns: 1fr; }
-    .pull-quote { font-size: 20px; margin: 32px 0; padding: 28px 20px; }
+    .pull-quote { font-size: 19px; margin: 28px 0; padding: 24px 18px; }
     .tldr p { font-size: 17px; }
   }
 </style>
@@ -488,26 +528,24 @@
 
 <aside class="sidebar" id="sidebar">
   <div class="brand">
-    <div class="mark">Tech Share</div>
+    <div class="mark">Internal · Ray Team</div>
     <div class="title">Ray 原生<em>沙箱</em></div>
+    <div class="meta">18 min · 技术分享</div>
   </div>
   <nav>
     <div class="label">目录</div>
     <ol>
-      <li><a href="#part-1">场景: 为啥要海量沙箱</a></li>
-      <li><a href="#part-2">洞察: 沙箱就是 Actor</a></li>
-      <li><a href="#part-3">gVisor 到底是啥</a></li>
-      <li><a href="#part-4">API 两层: 为啥这么设计</a></li>
-      <li><a href="#part-5">网络四模式: 实战意义</a></li>
-      <li><a href="#part-6">规模数字的分量</a></li>
-      <li><a href="#part-7">Harbor 实测说明啥</a></li>
-      <li><a href="#part-8">六个坑: 现在不能干啥</a></li>
-      <li><a href="#part-9">价值判断</a></li>
-      <li><a href="#part-10">落地的两个关键判断</a></li>
+      <li><a href="#part-1">开场 · 为啥关心<span class="time">2'</span></a></li>
+      <li><a href="#part-2">场景与真正痛点<span class="time">3'</span></a></li>
+      <li><a href="#part-3">核心架构<span class="time">4'</span></a></li>
+      <li><a href="#part-4">架构威力拆解<span class="time">3'</span></a></li>
+      <li><a href="#part-5">实战能力<span class="time">2'</span></a></li>
+      <li><a href="#part-6">生态落地<span class="time">2'</span></a></li>
+      <li><a href="#part-7">RL 用户反馈<span class="time">2'</span></a></li>
     </ol>
   </nav>
   <div class="foot">
-    2026·10·21<br>
+    2026·10·22<br>
     <a href="https://www.anyscale.com/blog/announcing-native-sandboxing-in-ray" target="_blank">原文 ↗</a><br>
     <a href="https://github.com/zaitian7liu-gif/ray-sandbox-share" target="_blank">GitHub ↗</a>
   </div>
@@ -517,245 +555,246 @@
 <article>
 
 <header class="post">
-  <div class="eyebrow">Tech Share · Ray 2.58</div>
+  <div class="eyebrow">Internal · Ray Team · 18 min</div>
   <h1>Ray 原生<span class="accent">沙箱</span></h1>
   <p class="lede">
-    把"创建一个隔离环境"变成和"创建一个 Actor"一样普通. 以前要搭沙箱服务, 现在一行 <code>sandbox.create()</code> 就行.
+    把沙箱做成 Ray 一等公民, 消除 RL 后训练场景中的第二套控制面. 来自 RL 用户的使用反馈 + 对 Ray 团队的功能请求.
   </p>
   <div class="meta">
-    2026·10·21
+    2026·10·22
     <span class="sep">·</span>
     <a href="https://www.anyscale.com/blog/announcing-native-sandboxing-in-ray" target="_blank">原文 ↗</a>
     <span class="sep">·</span>
-    Philipp Moritz · Andrew Sy Kim · Xinyu Zhang
+    Ray 2.58 · gVisor · Agentic RL
   </div>
 </header>
 
 <div class="tldr">
-  <div class="label">核心一句话</div>
-  <p>Ray 2.58 起, <strong>沙箱 = 一个 Ray Actor + 一个 gVisor 环境</strong>. Ray 管编排扩缩, gVisor 管隔离. 不再需要独立的沙箱控制面.</p>
+  <div class="label">开场结论</div>
+  <p>Ray 2.58 的 Sandbox 不是"又一个沙箱实现". 真正价值: <strong>把沙箱纳入 Ray 调度域</strong>, 让 RL 框架不用再维护第二套控制面. 这个方向对 — 但差 GPU / 端口暴露 / FS 快照才能支撑生产 Agentic RL.</p>
 </div>
 
-<h2 id="part-1"><span class="num">PART 01</span>先理解场景: 为啥需要海量沙箱</h2>
-
-<h3>Agentic RL 一次训练的样子</h3>
-
-<div class="ascii">一个 batch:
-  模型生成 1000 份代码 (每份都想"解决"同一道题)
-    ↓
-  这 1000 份代码并发跑, 看哪个过测试
-    ↓
-  跑过的 → 正样本, 没过的 → 负样本
-    ↓
-  用样本更新模型</div>
-
-<p>关键: <strong>这 1000 份代码得真跑一遍</strong>. 不能在训练节点上直接 <code>exec</code>, 因为:</p>
-
-<ul>
-  <li>代码是模型瞎编的, 可能 <code>rm -rf /</code></li>
-  <li>可能跑死循环把节点吃爆</li>
-  <li>可能写一堆文件污染环境</li>
-</ul>
-
-<p>所以每份代码必须有自己的隔离环境, 跑完销毁. 一次 batch 要 1000 个环境, 一天几千 batch = <span class="highlight">几百万次创建销毁</span>. 这就是"海量沙箱"的来源.</p>
-
-<h2 id="part-2"><span class="num">PART 02</span>关键洞察: 沙箱就是 Actor</h2>
-
-<p>把两边的能力清单摆一起:</p>
-
-<table>
-  <tr><th>Ray Actor 本来就有</th><th>沙箱需要的</th></tr>
-  <tr><td>调度到某台机器上</td><td>调度到某台机器上 ✓</td></tr>
-  <tr><td>分配 CPU / mem</td><td>分配 CPU / mem ✓</td></tr>
-  <tr><td>挂了自动重建</td><td>挂了自动重建 ✓</td></tr>
-  <tr><td>用完销毁</td><td>用完销毁 ✓</td></tr>
-  <tr><td>大规模并行创建</td><td>大规模并行创建 ✓</td></tr>
-</table>
-
-<p><strong>一模一样</strong>. Anyscale 的想法: 别再写一套, 直接让 Actor 身上多一个 gVisor 隔离层 就行.</p>
-
-<h3>两种路径对比</h3>
-
-<div class="compare">
-  <div class="side bad">
-    <div class="ttl">传统</div>
-<pre><code>Trainer (Ray Actor)
-    ↓ RPC
-沙箱服务 (独立调度)
-    ↓
-创建沙箱
-
-多一跳, 两套系统</code></pre>
-  </div>
-  <div class="side good">
-    <div class="ttl">Ray Sandbox</div>
-<pre><code>Trainer (Ray Actor)
-    ↓ 直接创建
-另一个 Ray Actor
-    (自带 gVisor)
-
-零跳, 一套系统</code></pre>
-  </div>
+<div class="agenda">
+  <div class="ttl">分享议程 · 18 min</div>
+  <table>
+    <tr><td>00:00</td><td>2'</td><td>开场: 为啥 Ray 团队该关心这个</td></tr>
+    <tr><td>02:00</td><td>3'</td><td>场景与真正痛点 (不是性能, 是架构)</td></tr>
+    <tr><td>05:00</td><td>4'</td><td>核心架构: Sandbox = Actor + gVisor</td></tr>
+    <tr><td>09:00</td><td>3'</td><td>架构威力拆解: 为啥能到 10 万沙箱</td></tr>
+    <tr><td>12:00</td><td>2'</td><td>实战能力: 网络 / OCI 回调</td></tr>
+    <tr><td>14:00</td><td>2'</td><td>生态落地: Harbor / SkyRL / veRL</td></tr>
+    <tr><td>16:00</td><td>2'</td><td>RL 用户反馈 + 功能请求</td></tr>
+  </table>
 </div>
+
+<h2 id="part-1"><span class="num">PART 01</span>开场: 为啥 Ray 团队该关心这个<span class="time">2 min</span></h2>
+
+<p>Ray Sandbox 是 Ray 2.58 新加的实验特性, Anyscale 和 Google gVisor 团队联合做的. 但它的意义不在"实现"本身 — Ray 团队做分布式比谁都熟, 不需要听"Actor 是啥、PG 是啥"的科普.</p>
+
+<p>这次分享的角度, 是从一个 <strong>Agentic RL 场景用户</strong> 的视角, 讲三件事:</p>
+
+<ol>
+  <li>Ray Sandbox 填的是哪个<span class="highlight">架构缺口</span>, 不是哪个功能缺口</li>
+  <li>它能撑住 10 万沙箱, 是因为复用了 Ray 调度器哪部分<strong>工程威力</strong></li>
+  <li>目前落地过程中, RL 框架作者希望 Ray 团队再补啥</li>
+</ol>
+
+<p>核心观点一句话:</p>
 
 <div class="pull-quote">
-  <strong>Ray</strong> handles orchestration and scaling.<br>
-  <strong>gVisor</strong> handles isolation.
+  Ray Sandbox 的真正价值不是跑得多快, 是让 RL 框架能把沙箱当 Actor 用.<br>
+  <strong>消除第二套控制面</strong>, 比性能数字更重要.
 </div>
 
-<h2 id="part-3"><span class="num">PART 03</span>gVisor 到底是啥</h2>
+<h2 id="part-2"><span class="num">PART 02</span>场景与真正痛点 — 不是性能, 是架构<span class="time">3 min</span></h2>
 
-<p>把它想成 <strong>"假装自己是 Linux 内核的用户态程序"</strong>.</p>
+<h3>场景: Agentic RL 的 batch 规模</h3>
 
-<h3>syscall 路径对比</h3>
+<p>先把量化讲清楚. 一次典型 Agentic RL 训练 batch:</p>
+
+<div class="ascii">batch_size             = 1024 prompts
+samples_per_prompt     = 8
+avg_turns_per_episode  = 10 (ReAct 多轮交互)
+
+→ 单 batch sandbox exec = 1024 × 8 × 10 = 81,920 次
+→ 一天几千 batch
+→ 一次完整训练 = 几千万次 sandbox 创建 + exec + 销毁</div>
+
+<p>这个量级下, "再搭一套沙箱服务" 不是运维负担问题, 是<strong>架构能不能撑住</strong>的问题.</p>
+
+<h3>两条老路, 都是架构级错误</h3>
 
 <div class="compare">
   <div class="side bad">
-    <div class="ttl">普通 Docker</div>
-<pre><code>容器 python
-  open("/etc/passwd")
-    ↓
-宿主 Linux kernel
-  真实 sys_open
-
-内核漏洞被触发
-= 容器逃逸
-= 拿到宿主</code></pre>
+    <div class="ttl">老路 A: 自建 Docker</div>
+    <ul style="margin: 0; padding-left: 20px;">
+      <li>共享 kernel → 模型触发 CVE 可容器逃逸</li>
+      <li>要挂 docker socket → 等于交出宿主</li>
+      <li>runc 启动 ~100ms, 10 万要 1000s</li>
+      <li>dockerd 跟 Ray 分治, 不协调</li>
+    </ul>
   </div>
-  <div class="side good">
-    <div class="ttl">gVisor (runsc)</div>
-<pre><code>容器 python
-  open("/etc/passwd")
-    ↓ 拦截
-gVisor Sentry
-  用户态模拟 open
-    ↓ 需要时才问
-宿主 kernel (小 syscall)
-
-逃逸要攻破两道门</code></pre>
+  <div class="side bad">
+    <div class="ttl">老路 B: 独立沙箱服务 (E2B / Sandbox Fusion)</div>
+    <ul style="margin: 0; padding-left: 20px;">
+      <li>跨集群 HTTP RPC, 延迟放大</li>
+      <li>两套 autoscaler → <strong>协调不了</strong></li>
+      <li>两套资源账本 → GPU/CPU 不能统一预算</li>
+      <li>两个 oncall</li>
+    </ul>
   </div>
 </div>
 
-<div class="callout success">
-  <div class="tag">好处</div>
-  <p>容器里恶意代码<strong>接触不到真正 kernel</strong>. 要逃出去得先攻破 Sentry (用户态程序, 攻击面小几十倍), 再攻破 kernel.</p>
+<div class="callout danger">
+  <div class="tag">核心痛点</div>
+  <p>两条路都有同一个病: <strong>两套控制面</strong>. Ray 看不到沙箱的资源占用, autoscaler 无法协调 rollout 扩容和 sandbox 扩容的节奏. 这是架构级错误, 优化改不动.</p>
 </div>
 
-<div class="callout">
-  <div class="tag">代价</div>
-  <p>多一层转译, syscall 慢 10-30%. 对 Agent 跑脚本不敏感.</p>
-</div>
+<h3>这就是 Ray Sandbox 要解的问题</h3>
 
-<div class="callout info">
-  <div class="tag">OCI 兼容</div>
-  <p>Docker 镜像拿过来就能用, 不用改. runtime 从 <code>runc</code> 换成 <code>runsc</code> 即可.</p>
-</div>
+<blockquote>
+  Ray handles orchestration and scaling. gVisor handles isolation.<br>
+  — 原博文, 2026-08-25
+</blockquote>
 
-<h3>四种隔离方案横向比</h3>
+<p>这不是性能宣言, 是<span class="highlight">职责边界宣言</span>. 两套控制面合并成一套, 才是重点.</p>
 
-<table>
-  <tr><th>方案</th><th>隔离</th><th>启动</th><th>syscall 开销</th></tr>
-  <tr><td>Docker (runc)</td><td>低, 共享 kernel</td><td>~100ms</td><td>0</td></tr>
-  <tr><td><strong>gVisor (runsc)</strong></td><td>中, 用户态 kernel</td><td>&lt;1s</td><td>中</td></tr>
-  <tr><td>Firecracker</td><td>高, 微 VM</td><td>125ms+</td><td>低</td></tr>
-  <tr><td>Kata</td><td>高, VM</td><td>500ms+</td><td>低</td></tr>
-</table>
+<h2 id="part-3"><span class="num">PART 03</span>核心架构 — Sandbox 怎么融入 Ray<span class="time">4 min</span></h2>
 
-<p>gVisor 的甜点: <strong>隔离够强 + 启动够快 + OCI 生态</strong>.</p>
+<h3>一句话定义</h3>
 
-<h2 id="part-4"><span class="num">PART 04</span>API 两层: 为啥这么设计</h2>
+<p><strong>一个 Sandbox = 一个 Ray Actor + 一个 gVisor 环境</strong>. 不引入新抽象.</p>
 
-<h3>高层 — 90% 的人用这个</h3>
+<h3>它在 Ray 生态里的位置</h3>
 
-<pre><code class="language-python">from ray.experimental import sandbox
+<div class="ascii">Ray Core (Actor / Task / Object Store / PG)
+   ├─ Ray Train       ← 分布式训练 (FSDP / Megatron)
+   ├─ Ray Serve       ← 推理服务
+   ├─ Ray Data        ← 数据加载
+   ├─ Ray Tune        ← 超参搜索
+   └─ Ray Sandbox ✨  ← 不可信代码执行 (基于 Actor + gVisor)</div>
 
-sb = sandbox.create(
-    image="python:3.12-slim",   # 用啥镜像
-    cpu=1.0, memory="512Mi",    # 要多少资源
-    network="none",              # 要不要网
+<p>Ray Sandbox 是 Ray Core 之上的<strong>第 5 个 library</strong>. 它复用 Core 的全部原语, 不是新造一套.</p>
+
+<h3>创建一个沙箱, Ray 内部发生啥</h3>
+
+<div class="ascii">用户: sandbox.create(image="python:3.12-slim", cpu=1.0, memory="512Mi")
+     │
+     ↓
+Ray Scheduler (raylet)
+  ├─ 选节点 (按资源余量 + 亲和性)
+  ├─ 预留 CPU=1.0, mem=512Mi
+  └─ 分配 bundle (如在 PG 下)
+     │
+     ↓
+节点上拉起 Proxy Actor (Python 进程)
+     │
+     ↓
+Proxy Actor 调 runsc (gVisor OCI runtime)
+     │
+     ↓
+gVisor 起 Sentry 用户态内核 + 容器进程
+     │
+     ↓
+返回 Actor handle → 用户</div>
+
+<h3>两层 API</h3>
+
+<div class="compare">
+  <div class="side neutral">
+    <div class="ttl">高层 · 90% 场景</div>
+<pre><code>sb = sandbox.create(
+    image="python:3.12-slim",
+    cpu=1.0, memory="512Mi",
+    network="none",
 )
-ray.get(sb.exec.remote("python -c '1+1'"))  # 跑命令
-sb.delete.remote()                           # 用完销毁</code></pre>
-
-<div class="callout info">
-  <div class="tag">关键细节</div>
-  <p><code>sb</code> 是 <strong>Ray Actor handle</strong>. 这意味着:</p>
-  <ul>
-    <li><code>sb</code> 可能在集群任意一台机器上, 调用方不用管</li>
-    <li><code>sb.exec.remote(...)</code> 走 Ray 的 RPC, 自动序列化参数</li>
-    <li>多个 Actor 并发创建沙箱 = 自动并发创建, 不用自己写线程池</li>
-  </ul>
-</div>
-
-<h3>底层 — 想自己造沙箱服务的人</h3>
-
-<pre><code class="language-python"># 跑在某台机器上的 Actor, 自己管沙箱池
-@ray.remote
+result = ray.get(
+    sb.exec.remote("python script.py")
+)
+sb.delete.remote()</code></pre>
+    <p style="margin: 10px 0 0; font-size: 13px; color: var(--dim);">sb 是 Ray Actor handle, 自带 Ray 全部能力</p>
+  </div>
+  <div class="side neutral">
+    <div class="ttl">底层 · 自建沙箱池</div>
+<pre><code>@ray.remote
 class SandboxPool:
     def __init__(self):
-        self.rt = SandboxRuntime()   # 直接拿本地 gVisor
+        self.rt = SandboxRuntime()
         self.pool = {}
 
-    def create(self, sid):
-        self.pool[sid] = self.rt.create(image="...")</code></pre>
+    def create(self, sid, spec):
+        self.pool[sid] = self.rt.create(spec)</code></pre>
+    <p style="margin: 10px 0 0; font-size: 13px; color: var(--dim);">直接拿本地 gVisor, 可修改 OCI spec</p>
+  </div>
+</div>
 
-<p><strong>为啥要这层</strong>: 高层每个沙箱是一个 Actor, 创建有开销. batch 场景 1 秒要起 1000 个沙箱, 1 个 Actor 管 100 个沙箱更快. 这层给你这个控制.</p>
+<h3>关键能力: OCI spec 回调</h3>
 
-<h3>OCI spec 回调 — 最硬核的能力</h3>
+<p>这是 Ray Sandbox 最硬核的扩展点. Ray 不急着把每种安全约束做成 API, 而是开了个 escape hatch:</p>
 
 <pre><code class="language-python">def harden(spec):
-    # 这是即将传给 gVisor 的 OCI JSON spec, 你能改任何字段
+    # 防 fork bomb
     spec["process"]["rlimits"].append({
-        "type": "RLIMIT_NPROC",
-        "hard": 100, "soft": 100,   # 最多 100 个进程, 防 fork bomb
+        "type": "RLIMIT_NPROC", "hard": 100, "soft": 100,
     })
     # 清所有 Linux capability
     spec["process"]["capabilities"] = {
-        k: [] for k in (
-            "bounding", "effective", "permitted",
-            "inheritable", "ambient",
-        )
+        k: [] for k in ("bounding", "effective", "permitted",
+                        "inheritable", "ambient")
     }
     return spec
 
 sb = sandbox.create(image="...", _oci_spec_transform_fn=harden)</code></pre>
 
-<p><strong>意义</strong>: 不用等 Ray 加参数, 你<span class="highlight">现在就能</span>打补丁加任何 Linux 安全约束.</p>
+<p>用户不等 Ray 发版加参数, 自己改 OCI spec 就能加任意 Linux 安全约束. 对 Ray 团队的意义: <strong>feature backlog 压力小一个量级</strong>.</p>
 
-<h2 id="part-5"><span class="num">PART 05</span>网络四模式 — 实战意义</h2>
+<h3>和 Docker 方案的架构级差异</h3>
 
-<table>
-  <tr><th>模式</th><th>实际场景</th></tr>
-  <tr><td><code>none</code></td><td><strong>跑 SWE-Bench</strong>. 模型生成的修复代码, 测试跑完就销毁, 不该联网</td></tr>
-  <tr><td><code>public</code></td><td><strong>装依赖</strong>. 代码里有 <code>pip install requests</code>, 得联网</td></tr>
-  <tr><td><code>host</code></td><td><strong>调诊断</strong>. 沙箱内脚本要访问宿主的 Prometheus/Loki</td></tr>
-  <tr><td><code>sandbox</code></td><td><strong>多 agent 协作</strong>. 两个沙箱间要通信 (如一个 agent 调另一个 agent 的 API)</td></tr>
-</table>
+<div class="compare">
+  <div class="side bad">
+    <div class="ttl">Docker 路径</div>
+<pre><code>Driver RPC
+    ↓
+Ray Actor
+    ↓ API 调用
+dockerd (守护进程)
+    ↓
+runc (OCI)
+    ↓
+容器 (共享宿主 kernel)
 
-<div class="callout success">
-  <div class="tag">默认 none 的意义</div>
-  <p>开发者忘了配网, 代码也跑不出去. 比默认开着网安全得多.</p>
+两层中间件
++ 共享 kernel</code></pre>
+  </div>
+  <div class="side good">
+    <div class="ttl">Ray Sandbox 路径</div>
+<pre><code>Driver RPC
+    ↓
+Ray Actor
+    ↓ 直接调用
+runsc (OCI, gVisor)
+    ↓
+容器 (Sentry 隔离)
+
+无 dockerd/containerd
++ 用户态 kernel 隔离</code></pre>
+  </div>
 </div>
 
-<h3>文件传输</h3>
+<p>Ray 没复用 Docker 引擎, 直接调 runsc. 这省掉的不只是一个进程, 是<strong>整条控制路径</strong>.</p>
 
-<ul>
-  <li><strong>小文件</strong> (配置/脚本): <code>write_file / read_file</code> 直接走 Ray object store</li>
-  <li><strong>大目录</strong> (代码仓库/数据集): tar 打包传输, 保留权限、符号链接、空目录; 跨节点自动走 object store</li>
-</ul>
+<h2 id="part-4"><span class="num">PART 04</span>架构威力拆解 — 10 万沙箱背后<span class="time">3 min</span></h2>
 
-<h2 id="part-6"><span class="num">PART 06</span>规模数字的分量</h2>
-
-<p>"GKE 上 20 秒起 10 万沙箱" 拆开看:</p>
+<h3>benchmark 数字拆算</h3>
 
 <div class="stats">
   <div class="stat">
     <span class="num">100K</span>
-    <div class="label">并发沙箱</div>
+    <div class="label">并发沙箱 (GKE)</div>
   </div>
   <div class="stat">
     <span class="num">20s</span>
-    <div class="label">启动耗时</div>
+    <div class="label">全部启动完成</div>
   </div>
   <div class="stat">
     <span class="num">5K/s</span>
@@ -763,34 +802,72 @@ sb = sandbox.create(image="...", _oci_spec_transform_fn=harden)</code></pre>
   </div>
 </div>
 
-<p>假设 2000 节点, 每节点 2.5 沙箱/秒 的冷启.</p>
+<h3>对标 K8s</h3>
 
-<div class="callout danger">
-  <div class="tag">同规模走 K8s pod</div>
-  <p>K8s API server 每秒能处理约 50-100 个 pod 创建. 10 万 pod 要 1000 秒 (16 分钟) + API server 直接压崩.</p>
+<table>
+  <tr><th>路径</th><th>创建速率</th><th>10 万沙箱耗时</th></tr>
+  <tr><td>K8s pod (走 API server)</td><td>50-100/秒</td><td>~1000s = 16 min, API server 大概率压崩</td></tr>
+  <tr><td><strong>Ray Sandbox</strong></td><td><strong>5000/秒</strong></td><td><strong>20s</strong></td></tr>
+</table>
+
+<div class="callout success">
+  <div class="tag">快 50 倍的原因</div>
+  <p>不是 gVisor 本身快, 是 <strong>Ray 调度器的工程威力</strong>:</p>
+  <ol style="margin: 6px 0 0;">
+    <li>创建不走 API server, raylet <strong>本地拉起</strong></li>
+    <li>调度决策分布式, 每个 raylet 独立判断, <strong>非单点</strong></li>
+    <li>Actor 比 pod 轻 (没 kubelet / CNI / CSI 全家桶)</li>
+    <li>gVisor 启动比完整容器栈省几个步骤</li>
+  </ol>
+  <p style="margin-top: 10px;">这段讲给 Ray 团队, 他们会会心一笑 — 这些是他们已经把 Ray Core 做好的能力, 只是被 Sandbox 顺势复用了.</p>
 </div>
 
-<h3>为啥 Ray 能快 50 倍</h3>
+<h3>这个数字对 RL 的意义</h3>
 
-<ol>
-  <li>创建沙箱 = 创建 Actor = Ray worker 本地起个 gVisor 进程, <strong>不走 API server</strong></li>
-  <li>调度决策是 Ray scheduler 的 raylet 分布式做, <strong>不是单点 kube-scheduler</strong></li>
-  <li>gVisor 本身比完整 pod 轻 (没 kubelet / CNI / CSI 这堆)</li>
-</ol>
+<p>回到 Part 2 的 batch 量化:</p>
 
-<h2 id="part-7"><span class="num">PART 07</span>Harbor 实测说明啥</h2>
+<ul>
+  <li>一个 batch 需要 ~8 万次 sandbox exec</li>
+  <li>Ray Sandbox 5000/s 吞吐 → 创建时间 <strong>16 秒 ≪ episode 执行时间 (分钟级)</strong></li>
+  <li>→ <span class="highlight">沙箱创建开销可忽略</span></li>
+</ul>
 
-<p>Harbor = "跑 agent 评测的 pytest". 让 Claude Code 做 SWE-Bench 题, 测它过多少.</p>
+<p>换句话说, Ray Sandbox 的性能不是"刚好够用", 是<strong>把这个变量从 RL 系统架构里消去了</strong>. RL 用户不用再把沙箱启动延迟当设计约束.</p>
 
-<pre><code class="language-bash">pip install 'harbor[ray]'
+<h2 id="part-5"><span class="num">PART 05</span>实战能力 — 两个最关键的<span class="time">2 min</span></h2>
 
-harbor run --dataset terminal-bench@2.0 \
-  --agent claude-code \
-  --model anthropic/claude-opus-4-1 \
-  -e ray \
-  --n-concurrent 32</code></pre>
+<h3>网络 4 模式: 架构级安全默认</h3>
 
-<h3>14 核机实测</h3>
+<table>
+  <tr><th>模式</th><th>行为</th><th>典型用途</th></tr>
+  <tr><td><code>none</code> (默认)</td><td>仅 loopback</td><td>SWE-Bench 不可信代码</td></tr>
+  <tr><td><code>public</code></td><td>允许出公网</td><td>pip install, 调外部 API</td></tr>
+  <tr><td><code>host</code></td><td>共享节点 netns</td><td>访问宿主服务</td></tr>
+  <tr><td><code>sandbox</code></td><td>独立网络栈</td><td>多 agent 协作</td></tr>
+</table>
+
+<div class="callout info">
+  <div class="tag">设计亮点</div>
+  <p>默认 <code>none</code> 是对的. 开发者忘记配网, 代码就跑不出去; 比默认开着网 (K8s pod 的默认) 安全好几个数量级. 这是 Ray 团队给整个生态树的样板.</p>
+</div>
+
+<h3>OCI spec 回调: 技术威力</h3>
+
+<p>前面讲过, 不重复. 补一个 Ray 团队视角:</p>
+
+<ul>
+  <li>每个 Linux 安全特性都做 Python 参数 → feature creep</li>
+  <li>只开一个 OCI spec 回调 → 用户社区自己写加固模板</li>
+  <li>Ray 团队维护成本小一个量级</li>
+</ul>
+
+<p>其他能力 (文件传输 / MCP 后端) 一笔带过 — 都是 API 便利, 不是架构创新.</p>
+
+<h2 id="part-6"><span class="num">PART 06</span>生态落地 — 三个框架的现状<span class="time">2 min</span></h2>
+
+<h3>Harbor — 已验证可生产用</h3>
+
+<p>Harbor 是 coding agent 评测框架 (SWE-Bench / Terminal-Bench). 14 核机实测:</p>
 
 <div class="stats">
   <div class="stat">
@@ -807,118 +884,102 @@ harbor run --dataset terminal-bench@2.0 \
   </div>
 </div>
 
-<ul>
-  <li><strong>单 trial 29s</strong> — 包含 gVisor 启动 + agent 跑题 + 测试执行</li>
-  <li><strong>4 并发 8 trial = 3m02s</strong>, 平均 22.75s/trial — 并发比单跑还快, 说明没抢 CPU</li>
-  <li><strong>全 reward=1.0</strong> — 没有一个因为沙箱问题挂掉</li>
-</ul>
+<p>4 并发 × 8 trial, 共 3m02s, 0 异常. <strong>并发比单跑还快</strong>, 说明调度无阻塞.</p>
+
+<h3>SkyRL (UCB + Anyscale) — 已集成</h3>
+
+<p>SkyRL 的 <code>skyrl-agent</code> 已经集成 Ray Sandbox + Harbor. 这是官方背书的实现路径. Agentic RL 场景可以直接复用.</p>
+
+<h3>veRL (Volcengine 字节) — 待集成</h3>
+
+<p>veRL 当前用 <strong>Sandbox Fusion</strong> — Volcengine 自家的 HTTP code sandbox 服务. 架构:</p>
+
+<div class="ascii">veRL Agent Loop
+    ↓
+BaseTool.execute(code)
+    ↓
+HTTP POST → Sandbox Fusion 服务 (独立集群)
+    ↓
+返回 stdout / exit_code</div>
+
+<p>切换到 Ray Sandbox 的路径非常清晰:</p>
+
+<pre><code class="language-python"># 当前
+class CodeTool(BaseTool):
+    def execute(self, code):
+        resp = requests.post(sandbox_fusion_url, json={"code": code})
+        return resp.json()
+
+# 切换后
+class CodeTool(BaseTool):
+    def __init__(self):
+        self.sb = sandbox.create(image="python:3.12-slim", network="none")
+    def execute(self, code):
+        return ray.get(self.sb.exec.remote(code))</code></pre>
 
 <div class="callout success">
-  <div class="tag">结论</div>
-  <p>轻量级 agent 评测这类负载, Ray Sandbox <strong>已经可用于生产</strong>.</p>
+  <div class="tag">集成成本</div>
+  <p><strong>一个 class 改两行</strong>. 不动框架骨架, 不动 trainer, 不动 rollout. 这是 Ray Sandbox 架构设计的直接结果 — 对接是"替换一个 HTTP client"级别.</p>
 </div>
 
-<h2 id="part-8"><span class="num">PART 08</span>六个坑: 现在不能干啥</h2>
+<h3>横向总结</h3>
 
 <table>
-  <tr><th>坑</th><th>影响</th></tr>
-  <tr><td>experimental</td><td>API 下个版本可能改, 别锁死</td></tr>
-  <tr><td>无 GPU 沙箱</td><td>要跑 CUDA kernel generation 的 RL, 用不了</td></tr>
-  <tr><td>内嵌 Docker 未测</td><td>需要在沙箱里再起容器的 (如 CI 场景) 没保障</td></tr>
-  <tr><td>无 FS 快照</td><td>批量从同一 base 分叉 (如 1000 个变体共享 base layer) 做不到</td></tr>
-  <tr><td>无端口暴露</td><td>沙箱里跑个 web server 让外面访问? 做不到</td></tr>
-  <tr><td>必须依赖 Ray</td><td>想独立做个 sandbox-as-a-service 用不了</td></tr>
+  <tr><th>方案</th><th>控制平面</th><th>瓶颈</th><th>隔离</th><th>适合</th></tr>
+  <tr><td>自建 Docker</td><td>Ray + dockerd 两套</td><td>共享 kernel</td><td>低</td><td>POC</td></tr>
+  <tr><td>Sandbox Fusion</td><td>两套独立集群</td><td>跨集群 RPC</td><td>中</td><td>veRL 现状</td></tr>
+  <tr><td><strong>Ray Native</strong></td><td><strong>Ray 单套</strong></td><td>syscall 10-30%</td><td><strong>高</strong></td><td><strong>大规模 Agentic RL</strong></td></tr>
 </table>
 
-<div class="callout danger">
-  <div class="tag">结论</div>
-  <p>当前只适合<strong>"CPU + 代码执行 + 短生命周期"</strong>场景.</p>
-</div>
+<h2 id="part-7"><span class="num">PART 07</span>RL 用户反馈 + 功能请求<span class="time">2 min</span></h2>
 
-<h2 id="part-9"><span class="num">PART 09</span>我的判断 — 价值在哪</h2>
+<p>这部分是分享的落点 — <strong>我们希望 Ray 团队继续做什么</strong>.</p>
 
-<p><strong>不是"又一个沙箱"</strong>. 价值在<span class="highlight">消除第二套控制面</span>.</p>
+<h3>当前阻塞生产的四个硬门槛</h3>
 
-<h3>对比两种世界</h3>
+<table>
+  <tr><th>门槛</th><th>影响</th><th>优先级</th></tr>
+  <tr><td><strong>REST API 版本</strong> (PR #65633)</td><td>训练集群和沙箱集群<strong>物理分离</strong>. 内网训练集群跑不可信代码, 安全团队不会批. 这是落地的最低门槛</td><td style="color: var(--accent5);">P0</td></tr>
+  <tr><td><strong>GPU sandbox</strong></td><td>CUDA kernel generation / RSI 场景需要. 普通 Agentic RL 不急 (推理在 rollout actor)</td><td style="color: var(--accent4);">P1</td></tr>
+  <tr><td><strong>跨 sandbox 端口暴露</strong></td><td>Multi-agent 协作 (agent A 调 agent B 的 web server) 做不到</td><td style="color: var(--accent4);">P1</td></tr>
+  <tr><td><strong>文件系统快照</strong></td><td>1000 变体从同一 base 分叉, 共享 layer. 现在每个冷启</td><td style="color: var(--accent4);">P2</td></tr>
+</table>
 
-<div class="compare">
-  <div class="side bad">
-    <div class="ttl">世界 A: 现有</div>
-    <p>训练集群 (K8s + Ray) + 独立沙箱系统 (另一套 K8s? E2B? 自建?)</p>
-    <ul style="margin: 0;">
-      <li>两套调度打架</li>
-      <li>两套资源账本</li>
-      <li>两套扩缩逻辑</li>
-      <li>两个 oncall</li>
-    </ul>
-  </div>
-  <div class="side good">
-    <div class="ttl">世界 B: Ray Sandbox</div>
-    <p>训练集群和沙箱 <strong>同一套 Ray</strong></p>
-    <ul style="margin: 0;">
-      <li>一个 autoscaler 看全局负载</li>
-      <li>一个资源账本</li>
-      <li>一套扩缩逻辑</li>
-      <li>一个 oncall</li>
-    </ul>
-  </div>
-</div>
+<h3>Ray 调度能力的具体改进请求</h3>
 
-<div class="callout info">
-  <div class="tag">杀手锏</div>
-  <p><strong>运维简化</strong>是真正杀手锏. 性能是副产品.</p>
-</div>
-
-<h3>攻击面也要注意</h3>
+<p>这些是 RL 框架用 Ray 时碰到的, 不限于 Sandbox:</p>
 
 <ul>
-  <li>CVE-2023-3978 (DNS 解析) 等 gVisor 历史漏洞存在</li>
-  <li>共享 host, 侧信道 (Spectre 等) 仍适用</li>
-  <li>原文明说 "future: guidance for models actively trying to escape"</li>
-  <li>→ 官方承认<strong>当前防御未针对主动攻击者优化</strong></li>
+  <li><strong>更细的 bundle 分数共享</strong> — hybrid engine (train + rollout 同进程) 疯狂用 <code>num_gpus=1/N</code>. 希望这个机制有一等公民 API</li>
+  <li><strong>AsyncActor context switch 延迟优化</strong> — trainer ↔ rollout 切换是热路径, 几十 ms 的延迟累积很可观</li>
+  <li><strong>NCCL + Ray 互操作</strong> — collective group management 现在要框架自己写, 希望有标准接口</li>
 </ul>
 
-<h2 id="part-10"><span class="num">PART 10</span>落地的两个关键判断</h2>
+<h3>Agentic RL 真正的瓶颈 (供参考)</h3>
 
-<div class="callout">
-  <div class="tag">判断 1</div>
-  <p><strong>你的 workload 需要 GPU 沙箱吗?</strong></p>
-  <ul>
-    <li>要 → 等几个版本</li>
-    <li>不要 (纯 CPU 代码执行) → 可以试</li>
-  </ul>
+<p>这个讲给 Ray 团队, 让他们知道沙箱不是最大瓶颈:</p>
+
+<ol>
+  <li><strong>Long-horizon trajectory 的权重同步频率</strong> — 一个 episode 几十分钟, 要不要 off-policy? SkyRL 在用 async weight update 解</li>
+  <li><strong>Tool call 的异步调度</strong> — ReAct 要并发工具调用, Ray asyncio 够不够顺手</li>
+  <li><strong>Replay buffer 的分布式存储</strong> — 大 trajectory 存哪, object store 够不够</li>
+</ol>
+
+<p>Sandbox 是<strong>基础设施收尾</strong>, 不是性能瓶颈. 但它决定<span class="highlight">框架能不能把沙箱当一等公民</span>.</p>
+
+<h3>一句话收尾</h3>
+
+<div class="pull-quote">
+  Ray Sandbox 的真正价值不是跑得多快, 是让 RL 框架能<strong>把沙箱当 Actor 用</strong>.<br>
+  下一步希望 Ray 团队把<strong>REST API + GPU sandbox + cross-sandbox port</strong> 补齐 —<br>
+  这是我们 RL 落地的三个硬门槛.
 </div>
-
-<div class="callout">
-  <div class="tag">判断 2</div>
-  <p><strong>你的 workload 需要联网服务吗?</strong></p>
-  <ul>
-    <li>要 (agent 调外部 MCP server, 沙箱间通信) → 看端口暴露/快照路线图</li>
-    <li>不要 (封闭环境跑完就销毁) → 可以试</li>
-  </ul>
-</div>
-
-<h3>对 ray-agent (我们项目) 的具体答案</h3>
-
-<ul>
-  <li><strong>当前</strong>: 只读诊断, 完全不涉及, 不用动</li>
-  <li><strong>未来</strong>: 要做"自愈动作执行" (如 patch 配置后 dry-run), 这就是比 <code>kubectl exec</code> <span class="highlight">安全得多的落点</span></li>
-  <li><strong>短期</strong>: 继续读 Ray release notes, 等 REST API 版本 (PR #65633) 出来</li>
-</ul>
-
-<h3>国内落地建议</h3>
-
-<ul>
-  <li>Ray 2.58 实验性, 生产用观察几个版本</li>
-  <li>节点需预装 <code>runsc</code>, 基础镜像自己打</li>
-  <li>国内 GKE 不可用, 自建 K8s + Ray Autoscaler 也能跑</li>
-  <li>关键看沙箱放置能否复用现有调度策略</li>
-</ul>
 
 <hr>
 
 <footer class="post-foot">
   原文 → <a href="https://www.anyscale.com/blog/announcing-native-sandboxing-in-ray" target="_blank">anyscale.com/blog/announcing-native-sandboxing-in-ray</a><br>
+  REST API PR → <a href="https://github.com/ray-project/ray/pull/65633" target="_blank">ray-project/ray#65633</a><br>
   反馈 → <a href="https://github.com/ray-project/ray/issues/65352" target="_blank">Ray Issue #65352</a><br>
   Source → <a href="https://github.com/zaitian7liu-gif/ray-sandbox-share" target="_blank">github.com/zaitian7liu-gif/ray-sandbox-share</a>
 </footer>
