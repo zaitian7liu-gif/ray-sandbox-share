@@ -535,13 +535,15 @@
   <nav>
     <div class="label">目录</div>
     <ol>
-      <li><a href="#part-1">开场 · 为啥关心<span class="time">2'</span></a></li>
-      <li><a href="#part-2">场景与真正痛点<span class="time">3'</span></a></li>
-      <li><a href="#part-3">核心架构<span class="time">4'</span></a></li>
-      <li><a href="#part-4">架构威力拆解<span class="time">3'</span></a></li>
-      <li><a href="#part-5">实战能力<span class="time">2'</span></a></li>
-      <li><a href="#part-6">生态落地<span class="time">2'</span></a></li>
-      <li><a href="#part-7">RL 用户反馈<span class="time">2'</span></a></li>
+      <li><a href="#part-1">RL / 后训练 扫盲<span class="time">3'</span></a></li>
+      <li><a href="#part-2">沙箱是啥<span class="time">2'</span></a></li>
+      <li><a href="#part-3">开场 + 真正痛点<span class="time">2'</span></a></li>
+      <li><a href="#part-4">核心架构<span class="time">2'</span></a></li>
+      <li><a href="#part-5">Actor 映射详解<span class="time">2'</span></a></li>
+      <li><a href="#part-6">架构威力<span class="time">2'</span></a></li>
+      <li><a href="#part-7">实战能力<span class="time">1'</span></a></li>
+      <li><a href="#part-8">生态落地<span class="time">2'</span></a></li>
+      <li><a href="#part-9">RL 用户反馈<span class="time">2'</span></a></li>
     </ol>
   </nav>
   <div class="foot">
@@ -577,58 +579,158 @@
 <div class="agenda">
   <div class="ttl">分享议程 · 18 min</div>
   <table>
-    <tr><td>00:00</td><td>2'</td><td>开场: 为啥 Ray 团队该关心这个</td></tr>
-    <tr><td>02:00</td><td>3'</td><td>场景与真正痛点 (不是性能, 是架构)</td></tr>
-    <tr><td>05:00</td><td>4'</td><td>核心架构: Sandbox = Actor + gVisor</td></tr>
-    <tr><td>09:00</td><td>3'</td><td>架构威力拆解: 为啥能到 10 万沙箱</td></tr>
-    <tr><td>12:00</td><td>2'</td><td>实战能力: 网络 / OCI 回调</td></tr>
+    <tr><td>00:00</td><td>3'</td><td>RL / 后训练 扫盲 (建共识)</td></tr>
+    <tr><td>03:00</td><td>2'</td><td>沙箱是啥 (gVisor vs Docker)</td></tr>
+    <tr><td>05:00</td><td>2'</td><td>开场 + 真正痛点 (架构不是性能)</td></tr>
+    <tr><td>07:00</td><td>2'</td><td>核心架构: Sandbox = Actor + gVisor</td></tr>
+    <tr><td>09:00</td><td>2'</td><td>Actor 映射详解 (生命周期/调度/故障)</td></tr>
+    <tr><td>11:00</td><td>2'</td><td>架构威力: 为啥能到 10 万沙箱</td></tr>
+    <tr><td>13:00</td><td>1'</td><td>实战能力: 网络 / OCI 回调</td></tr>
     <tr><td>14:00</td><td>2'</td><td>生态落地: Harbor / SkyRL / veRL</td></tr>
     <tr><td>16:00</td><td>2'</td><td>RL 用户反馈 + 功能请求</td></tr>
   </table>
 </div>
 
-<h2 id="part-1"><span class="num">PART 01</span>开场: 为啥 Ray 团队该关心这个<span class="time">2 min</span></h2>
+<h2 id="part-1"><span class="num">PART 01</span>RL / 后训练 扫盲 — 先建共识<span class="time">3 min</span></h2>
 
-<p>Ray Sandbox 是 Ray 2.58 新加的实验特性, Anyscale 和 Google gVisor 团队联合做的. 但它的意义不在"实现"本身 — Ray 团队做分布式比谁都熟, 不需要听"Actor 是啥、PG 是啥"的科普.</p>
+<p>Ray 团队做分布式比谁都熟, 但 RL 后训练这几年变化大, 先 3 分钟拉齐语境.</p>
 
-<p>这次分享的角度, 是从一个 <strong>Agentic RL 场景用户</strong> 的视角, 讲三件事:</p>
+<h3>后训练三种玩法</h3>
 
-<ol>
-  <li>Ray Sandbox 填的是哪个<span class="highlight">架构缺口</span>, 不是哪个功能缺口</li>
-  <li>它能撑住 10 万沙箱, 是因为复用了 Ray 调度器哪部分<strong>工程威力</strong></li>
-  <li>目前落地过程中, RL 框架作者希望 Ray 团队再补啥</li>
-</ol>
+<table>
+  <tr><th>玩法</th><th>做啥</th><th>要 RL loop 吗</th></tr>
+  <tr><td>SFT (监督微调)</td><td>拿人工标注数据直接训</td><td>❌ 普通训练</td></tr>
+  <tr><td>DPO (偏好对齐)</td><td>拿 (好答案, 坏答案) pair 训</td><td>❌ 要 reference model</td></tr>
+  <tr><td>RLHF / GRPO</td><td>模型自己产 trajectory + 打分</td><td>✅ 完整 loop</td></tr>
+  <tr><td><strong>Agentic RL</strong></td><td><strong>模型调工具 + 跑代码 + 多轮</strong></td><td><strong>✅ + sandbox</strong></td></tr>
+</table>
 
-<p>核心观点一句话:</p>
+<p>Ray 对 SFT/DPO 用处有限 (就是 FSDP 包一下). <strong>真用武之地在 RLHF 和 Agentic RL</strong>, 因为要同时跑三类负载:</p>
 
-<div class="pull-quote">
-  Ray Sandbox 的真正价值不是跑得多快, 是让 RL 框架能把沙箱当 Actor 用.<br>
-  <strong>消除第二套控制面</strong>, 比性能数字更重要.
+<table>
+  <tr><th>角色</th><th>资源</th><th>工作</th></tr>
+  <tr><td>Trainer</td><td>大 GPU</td><td>算梯度, FSDP / Megatron</td></tr>
+  <tr><td>Rollout</td><td>GPU</td><td>模型推理, 生成 trajectory</td></tr>
+  <tr><td>Env</td><td>纯 CPU</td><td>跑环境, 返回 reward</td></tr>
+</table>
+
+<h3>Agentic RL 跟传统 RL 的本质差别</h3>
+
+<div class="compare">
+  <div class="side neutral">
+    <div class="ttl">传统 RL (Atari / Mujoco)</div>
+    <ul style="margin: 0; padding-left: 20px;">
+      <li>Env = 进程内 Python 对象</li>
+      <li>step() 就完事</li>
+      <li>可信, 不需要隔离</li>
+      <li>单轮决策</li>
+    </ul>
+  </div>
+  <div class="side neutral">
+    <div class="ttl">Agentic RL (SWE-Bench 等)</div>
+    <ul style="margin: 0; padding-left: 20px;">
+      <li><strong>Env = shell / 代码执行器</strong></li>
+      <li>模型输出代码, env 跑, 返 stdout+exit_code</li>
+      <li><strong>不可信, 必须隔离</strong></li>
+      <li>多轮 (ReAct), 跨步状态保持</li>
+    </ul>
+  </div>
 </div>
 
-<h2 id="part-2"><span class="num">PART 02</span>场景与真正痛点 — 不是性能, 是架构<span class="time">3 min</span></h2>
-
-<h3>场景: Agentic RL 的 batch 规模</h3>
-
-<p>先把量化讲清楚. 一次典型 Agentic RL 训练 batch:</p>
+<h3>一次 Agentic RL batch 的量化</h3>
 
 <div class="ascii">batch_size             = 1024 prompts
 samples_per_prompt     = 8
-avg_turns_per_episode  = 10 (ReAct 多轮交互)
+avg_turns_per_episode  = 10 (ReAct 多轮)
 
 → 单 batch sandbox exec = 1024 × 8 × 10 = 81,920 次
+→ 单 batch 并发 sandbox   = 8,192 个 (每 episode 一个)
 → 一天几千 batch
-→ 一次完整训练 = 几千万次 sandbox 创建 + exec + 销毁</div>
+→ 一次完整训练 = <span style="color:#f5a524;">几千万次 sandbox 创建+exec+销毁</span></div>
 
-<p>这个量级下, "再搭一套沙箱服务" 不是运维负担问题, 是<strong>架构能不能撑住</strong>的问题.</p>
+<p>这个数量级是后面"10 万沙箱 benchmark"的锚点. 不是 Anyscale 吹数字, 是 RL 真需要.</p>
 
-<h3>两条老路, 都是架构级错误</h3>
+<h3>主流后训练框架都是 Ray 底座</h3>
+
+<ul>
+  <li><strong>veRL</strong> (字节, 最成熟)</li>
+  <li><strong>NeMo-RL</strong> (NVIDIA)</li>
+  <li><strong>SkyRL</strong> (UC Berkeley + Anyscale, Agentic 最激进)</li>
+  <li><strong>SLIME / MILES</strong> (研究用)</li>
+</ul>
+
+<p>→ 已经是**事实标准**. Ray Sandbox 不是来抢占新市场, 是补**已有用户群**的最后一块.</p>
+
+<h2 id="part-2"><span class="num">PART 02</span>沙箱是啥 — gVisor vs Docker<span class="time">2 min</span></h2>
+
+<h3>"沙箱" 在这里的定义</h3>
+
+<p>一个<strong>一次性的、强隔离的 Linux 环境</strong>, 用来跑不可信代码. 跑完销毁. 要求:</p>
+
+<ul>
+  <li>模型里 <code>rm -rf /</code> 不会伤到宿主</li>
+  <li>fork bomb 不会打死节点</li>
+  <li>读不到宿主秘钥 / 其他沙箱数据</li>
+  <li>启动够快 (百毫秒级)</li>
+</ul>
+
+<h3>gVisor 是啥</h3>
+
+<p>Google 2018 开源的 <strong>用户态 Linux 内核</strong>, Go 写的. OCI 兼容, 可执行名 <code>runsc</code>, 跟 <code>runc</code> 同级.</p>
+
+<h3>和 Docker 的 syscall 路径对比</h3>
+
+<div class="compare">
+  <div class="side bad">
+    <div class="ttl">Docker (runc)</div>
+<pre><code>容器里 python
+  open("/etc/passwd")
+    ↓
+宿主 Linux kernel
+  真实 sys_open
+
+内核漏洞被触发
+= 容器逃逸
+= 拿到宿主</code></pre>
+  </div>
+  <div class="side good">
+    <div class="ttl">gVisor (runsc)</div>
+<pre><code>容器里 python
+  open("/etc/passwd")
+    ↓ 拦截
+gVisor Sentry
+  用户态模拟 open
+    ↓ 需要时才问
+宿主 kernel (小 syscall)
+
+逃逸要攻破两道门</code></pre>
+  </div>
+</div>
+
+<h3>隔离方案横向比</h3>
+
+<table>
+  <tr><th>方案</th><th>隔离</th><th>启动</th><th>syscall 开销</th></tr>
+  <tr><td>Docker (runc)</td><td>低 · 共享 kernel</td><td>~100ms</td><td>0</td></tr>
+  <tr><td><strong>gVisor (runsc)</strong></td><td>中 · 用户态 kernel</td><td>&lt;1s</td><td>中 (10-30%)</td></tr>
+  <tr><td>Firecracker</td><td>高 · 微 VM</td><td>125ms+</td><td>低</td></tr>
+  <tr><td>Kata</td><td>高 · VM</td><td>500ms+</td><td>低</td></tr>
+</table>
+
+<div class="callout info">
+  <div class="tag">为啥 Ray 选 gVisor</div>
+  <p>Agentic RL 要的是 <strong>隔离够强 + 启动够快 + OCI 生态</strong>. gVisor 刚好是这三者交集的甜点. Firecracker 隔离更强但启动慢 2-3 倍, 10 万并发不划算.</p>
+</div>
+
+<h2 id="part-3"><span class="num">PART 03</span>开场 + 真正痛点<span class="time">2 min</span></h2>
+
+<p>有了 Part 1/2 的共识, 现在讲核心观点. 一次典型 Agentic RL 要几千万次沙箱执行. 老方案有两条路:</p>
 
 <div class="compare">
   <div class="side bad">
     <div class="ttl">老路 A: 自建 Docker</div>
     <ul style="margin: 0; padding-left: 20px;">
-      <li>共享 kernel → 模型触发 CVE 可容器逃逸</li>
+      <li>共享 kernel → 模型触发 CVE 容器逃逸</li>
       <li>要挂 docker socket → 等于交出宿主</li>
       <li>runc 启动 ~100ms, 10 万要 1000s</li>
       <li>dockerd 跟 Ray 分治, 不协调</li>
@@ -647,10 +749,8 @@ avg_turns_per_episode  = 10 (ReAct 多轮交互)
 
 <div class="callout danger">
   <div class="tag">核心痛点</div>
-  <p>两条路都有同一个病: <strong>两套控制面</strong>. Ray 看不到沙箱的资源占用, autoscaler 无法协调 rollout 扩容和 sandbox 扩容的节奏. 这是架构级错误, 优化改不动.</p>
+  <p>两条路同一个病: <strong>两套控制面</strong>. Ray 看不到沙箱的资源占用, autoscaler 无法协调 rollout 扩容和 sandbox 扩容的节奏. 这是架构级错误, 优化改不动.</p>
 </div>
-
-<h3>这就是 Ray Sandbox 要解的问题</h3>
 
 <blockquote>
   Ray handles orchestration and scaling. gVisor handles isolation.<br>
@@ -659,7 +759,13 @@ avg_turns_per_episode  = 10 (ReAct 多轮交互)
 
 <p>这不是性能宣言, 是<span class="highlight">职责边界宣言</span>. 两套控制面合并成一套, 才是重点.</p>
 
-<h2 id="part-3"><span class="num">PART 03</span>核心架构 — Sandbox 怎么融入 Ray<span class="time">4 min</span></h2>
+<div class="pull-quote">
+  Ray Sandbox 的真正价值不是跑得多快,<br>
+  是让 RL 框架能把沙箱当 Actor 用.<br>
+  <strong>消除第二套控制面</strong>.
+</div>
+
+<h2 id="part-4"><span class="num">PART 04</span>核心架构 — Sandbox 怎么融入 Ray<span class="time">2 min</span></h2>
 
 <h3>一句话定义</h3>
 
@@ -783,7 +889,98 @@ runsc (OCI, gVisor)
 
 <p>Ray 没复用 Docker 引擎, 直接调 runsc. 这省掉的不只是一个进程, 是<strong>整条控制路径</strong>.</p>
 
-<h2 id="part-4"><span class="num">PART 04</span>架构威力拆解 — 10 万沙箱背后<span class="time">3 min</span></h2>
+<h2 id="part-5"><span class="num">PART 05</span>Actor 映射详解 — 沙箱到底怎么"是" Actor<span class="time">2 min</span></h2>
+
+<p>Ray 团队最在意的问题: Sandbox 怎么复用 Actor 已有能力. 一张对照表讲清:</p>
+
+<table>
+  <tr><th>Actor 原生能力</th><th>Sandbox 怎么用</th></tr>
+  <tr><td><code>@ray.remote</code> 创建</td><td><code>sandbox.create(...)</code> 内部就是建 Actor</td></tr>
+  <tr><td>Actor handle</td><td><code>sb</code> 对象 — 跟普通 handle 一样可以传、可以在远端调方法</td></tr>
+  <tr><td><code>actor.method.remote()</code></td><td><code>sb.exec.remote(cmd)</code> — 普通 Ray RPC</td></tr>
+  <tr><td>Resource request (<code>num_cpus / num_gpus</code>)</td><td><code>sandbox.create(cpu=1.0, memory="512Mi")</code> 转成 Actor 的 options</td></tr>
+  <tr><td>Placement Group bundle</td><td>可以把 sandbox Actor 绑到 PG bundle</td></tr>
+  <tr><td><code>max_restarts</code> 故障恢复</td><td>Actor 挂了 → Ray 自动重建 → <strong>沙箱重建, 不用用户写重试</strong></td></tr>
+  <tr><td>Autoscaler</td><td>N 个 sandbox pending → Ray 扩节点</td></tr>
+  <tr><td>Lifecycle (<code>ray.kill</code>)</td><td><code>sb.delete.remote()</code> 内部清 gVisor + 杀 Actor</td></tr>
+</table>
+
+<h3>两层 class 关系</h3>
+
+<div class="ascii">用户视角                 Ray 层                  OS 层
+─────────                ──────                 ─────
+sandbox.create(...)
+     ↓
+     ↓                 Proxy Actor (Python)
+     ↓                       │
+     ↓                       │ subprocess.Popen
+     ↓                       ↓
+     ↓                   runsc (gVisor OCI runtime)
+     ↓                       │
+     ↓                       │ clone + ptrace
+     ↓                       ↓
+                         Sentry (用户态 kernel)
+                             │
+                             ↓
+                         容器进程 (真正跑代码)
+
+sb (Actor handle)
+     │
+     ↓
+sb.exec.remote(cmd)
+     │ Ray RPC
+     ↓
+Proxy Actor . exec(cmd)
+     │
+     ↓ runsc exec
+     ↓
+容器内跑 cmd, 返回 stdout/stderr/exit_code</div>
+
+<h3>关键细节: Proxy Actor 做啥</h3>
+
+<p>Proxy Actor 是普通 Python Actor, 本身**不是**沙箱, 只是沙箱的 Ray 代理. 它:</p>
+
+<ul>
+  <li>持有一个 gVisor 容器实例 (子进程)</li>
+  <li>把 Ray RPC 翻译成 runsc 调用</li>
+  <li>管理容器生命周期</li>
+  <li>生命周期跟容器绑死 — Actor die → 容器清理</li>
+</ul>
+
+<p>这个设计让 Sandbox 不需要新调度器 — <strong>Proxy Actor 的放置就是沙箱的放置</strong>, Ray scheduler 已经做得很好.</p>
+
+<h3>一个端到端例子: Agentic RL rollout worker</h3>
+
+<pre><code class="language-python">@ray.remote(num_gpus=1)
+class RolloutWorker:
+    def __init__(self, model_ref):
+        self.model = load(model_ref)
+
+    def rollout(self, task):
+        # 创建 sandbox = 创建另一个 Ray Actor
+        sb = sandbox.create(
+            image=task.image, network="none",
+            cpu=1.0, memory="1Gi",
+        )
+        try:
+            state = ray.get(sb.exec.remote(task.setup)).stdout
+            trajectory = []
+            for step in range(task.max_steps):
+                action = self.model.generate(state)
+                if action.has_tool_call:
+                    # Ray RPC: 跨节点都没问题
+                    result = ray.get(sb.exec.remote(action.code))
+                    trajectory.append((state, action, result))
+                    state = result.stdout
+                else:
+                    break
+            return trajectory
+        finally:
+            sb.delete.remote()  # 用后即焚</code></pre>
+
+<p>关键: RolloutWorker 和 Sandbox <strong>很可能在不同节点</strong> (GPU 节点 vs CPU 节点). <code>sb.exec.remote()</code> 自动走 Ray RPC, 用户不用关心跨节点传输. <strong>Ray 把分布式复杂度完全藏住</strong>.</p>
+
+<h2 id="part-6"><span class="num">PART 06</span>架构威力拆解 — 10 万沙箱背后<span class="time">2 min</span></h2>
 
 <h3>benchmark 数字拆算</h3>
 
@@ -834,7 +1031,7 @@ runsc (OCI, gVisor)
 
 <p>换句话说, Ray Sandbox 的性能不是"刚好够用", 是<strong>把这个变量从 RL 系统架构里消去了</strong>. RL 用户不用再把沙箱启动延迟当设计约束.</p>
 
-<h2 id="part-5"><span class="num">PART 05</span>实战能力 — 两个最关键的<span class="time">2 min</span></h2>
+<h2 id="part-7"><span class="num">PART 07</span>实战能力 — 两个最关键的<span class="time">1 min</span></h2>
 
 <h3>网络 4 模式: 架构级安全默认</h3>
 
@@ -863,7 +1060,7 @@ runsc (OCI, gVisor)
 
 <p>其他能力 (文件传输 / MCP 后端) 一笔带过 — 都是 API 便利, 不是架构创新.</p>
 
-<h2 id="part-6"><span class="num">PART 06</span>生态落地 — 三个框架的现状<span class="time">2 min</span></h2>
+<h2 id="part-8"><span class="num">PART 08</span>生态落地 — 三个框架的现状<span class="time">2 min</span></h2>
 
 <h3>Harbor — 已验证可生产用</h3>
 
@@ -931,7 +1128,7 @@ class CodeTool(BaseTool):
   <tr><td><strong>Ray Native</strong></td><td><strong>Ray 单套</strong></td><td>syscall 10-30%</td><td><strong>高</strong></td><td><strong>大规模 Agentic RL</strong></td></tr>
 </table>
 
-<h2 id="part-7"><span class="num">PART 07</span>RL 用户反馈 + 功能请求<span class="time">2 min</span></h2>
+<h2 id="part-9"><span class="num">PART 09</span>RL 用户反馈 + 功能请求<span class="time">2 min</span></h2>
 
 <p>这部分是分享的落点 — <strong>我们希望 Ray 团队继续做什么</strong>.</p>
 
